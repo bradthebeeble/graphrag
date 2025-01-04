@@ -245,12 +245,13 @@ class GraphExtractor:
 
                 if (
                     record_attributes[0] == '"relationship"'
-                    and len(record_attributes) >= 5
+                    and len(record_attributes) >= 6
                 ):
                     # add this record as edge
                     source = clean_str(record_attributes[1].upper())
                     target = clean_str(record_attributes[2].upper())
-                    edge_description = clean_str(record_attributes[3])
+                    type = clean_str(record_attributes[3].upper())
+                    edge_description = clean_str(record_attributes[4])
                     edge_source_id = clean_str(str(source_doc_id))
                     try:
                         weight = float(record_attributes[-1])
@@ -291,6 +292,7 @@ class GraphExtractor:
                     graph.add_edge(
                         source,
                         target,
+                        type=type,
                         weight=weight,
                         description=edge_description,
                         source_id=edge_source_id,

@@ -37,6 +37,7 @@ def create_final_relationships(
             "human_readable_id",
             "source",
             "target",
+            "type",
             "description",
             "weight",
             "combined_degree",

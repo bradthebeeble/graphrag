@@ -247,13 +247,13 @@ async def run_pipeline(
 
     # ensure the incoming data is valid
     _validate_dataset(dataset)
-
     log.info("Final # of rows loaded: %s", len(dataset))
     context.stats.num_documents = len(dataset)
     last_workflow = "input"
 
     try:
         await _dump_stats(context.stats, context.storage)
+
 
         for workflow_to_run in workflows_to_run:
             # flush out any intermediate dataframes

@@ -116,7 +116,6 @@ def create_pipeline_config(settings: GraphRagConfig, verbose=False) -> PipelineC
             *(_embeddings_workflows(settings, embedded_fields)),
         ],
     )
-
     # Remove any workflows that were specified to be skipped
     log.info("skipping workflows %s", ",".join(skip_workflows))
     result.workflows = [w for w in result.workflows if w.name not in skip_workflows]
@@ -224,7 +223,7 @@ def _graph_workflows(settings: GraphRagConfig) -> list[PipelineWorkflowReference
                     "strategy": settings.entity_extraction.resolved_strategy(
                         settings.root_dir, settings.encoding_model
                     ),
-                    "entity_types": settings.entity_extraction.entity_types,
+                    "entity_types": settings.entity_extraction.entity_types, # TODO: add support for relationship types
                 },
                 "summarize_descriptions": {
                     **settings.summarize_descriptions.parallelization.model_dump(),

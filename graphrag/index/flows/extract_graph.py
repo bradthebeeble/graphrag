@@ -74,6 +74,7 @@ async def extract_graph(
 
 def _prep_nodes(entities, summaries) -> pd.DataFrame:
     entities.drop(columns=["description"], inplace=True)
+
     nodes = entities.merge(summaries, on="title", how="left").drop_duplicates(
         subset="title"
     )
@@ -81,7 +82,6 @@ def _prep_nodes(entities, summaries) -> pd.DataFrame:
     nodes["human_readable_id"] = nodes.index
     nodes["id"] = nodes["human_readable_id"].apply(lambda _x: str(uuid4()))
     return nodes
-
 
 def _prep_edges(relationships, summaries) -> pd.DataFrame:
     edges = (

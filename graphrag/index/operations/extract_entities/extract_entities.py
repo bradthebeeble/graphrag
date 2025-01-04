@@ -179,6 +179,7 @@ def _merge_relationships(relationship_dfs) -> pd.DataFrame:
         all_relationships.groupby(["source", "target"], sort=False)
         .agg(
             description=("description", list),
+            type=("type", lambda x: ", ".join(x)),
             text_unit_ids=("source_id", list),
             weight=("weight", "sum"),
         )

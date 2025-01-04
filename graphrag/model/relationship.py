@@ -19,6 +19,9 @@ class Relationship(Identified):
     target: str
     """The target entity name."""
 
+    type: str 
+    """The type of the relationship."""
+
     weight: float | None = 1.0
     """The edge weight."""
 
@@ -57,6 +60,7 @@ class Relationship(Identified):
             short_id=d.get(short_id_key),
             source=d[source_key],
             target=d[target_key],
+            type=d["type"],
             rank=d.get(rank_key, 1),
             description=d.get(description_key),
             weight=d.get(weight_key, 1.0),
