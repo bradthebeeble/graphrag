@@ -21,6 +21,7 @@ async def generate_entity_relationship_examples(
     llm: ChatLLM,
     persona: str,
     entity_types: str | list[str] | None,
+    relationship_types: str | list[str] | None,
     docs: str | list[str],
     language: str,
     json_mode: bool = False,
