@@ -40,13 +40,24 @@ async def generate_entity_relationship_examples(
             if isinstance(entity_types, str)
             else ", ".join(map(str, entity_types))
         )
+    
+        relationship_types_str = (
+            relationship_types
+            if isinstance(relationship_types, str)
+            else ", ".join(map(str, relationship_types))
+        )
 
         messages = [
             (
                 ENTITY_RELATIONSHIPS_GENERATION_JSON_PROMPT
                 if json_mode
                 else ENTITY_RELATIONSHIPS_GENERATION_PROMPT
-            ).format(entity_types=entity_types_str, input_text=doc, language=language)
+            ).format(
+                entity_types=entity_types_str,
+                relationship_types=relationship_types_str,
+                input_text=doc,
+                language=language
+            )
             for doc in docs_list
         ]
     else:
