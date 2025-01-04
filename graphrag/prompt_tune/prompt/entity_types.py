@@ -28,6 +28,7 @@ Task: Identify the key concepts, principles, and arguments shared among differen
 Text: Rationalism, epitomized by thinkers such as René Descartes, holds that reason is the primary source of knowledge. Key concepts within this school include the emphasis on the deductive method of reasoning.
 RESPONSE:
 concept, person, school of thought
+Relationship Types: developed_by, influences, emphasizes, belongs_to
 END OF EXAMPLE 2
 
 EXAMPLE 3
@@ -35,6 +36,7 @@ Task: Identify the full range of basic forces, factors, and trends that would in
 Text: Industry leaders such as Panasonic are vying for supremacy in the battery production sector. They are investing heavily in research and development and are exploring new technologies to gain a competitive edge.
 RESPONSE:
 organization, technology, sectors, investment strategies
+Relationship Types: invests_in, develops, manufactures, supplies_to, competes_with
 END OF EXAMPLE 3
 ======================================================================
 
