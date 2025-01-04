@@ -21,6 +21,7 @@ Task: Determine the connections and organizational hierarchy within the specifie
 Text: Example_Org_A is a company in Sweden. Example_Org_A's director is Example_Individual_B.
 RESPONSE:
 organization, person
+Relationship Types: directs, employs, headquartered_in
 END OF EXAMPLE 1
 
 EXAMPLE 2
