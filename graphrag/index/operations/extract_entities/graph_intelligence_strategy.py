@@ -16,12 +16,14 @@ from graphrag.index.operations.extract_entities.typing import (
     EntityExtractionResult,
     EntityTypes,
     StrategyConfig,
+    RelationshipTypes,
 )
 
 
 async def run_graph_intelligence(
     docs: list[Document],
     entity_types: EntityTypes,
+    relationship_types: RelationshipTypes,
     callbacks: VerbCallbacks,
     cache: PipelineCache,
     args: StrategyConfig,
@@ -29,13 +31,14 @@ async def run_graph_intelligence(
     """Run the graph intelligence entity extraction strategy."""
     llm_config = read_llm_params(args.get("llm", {}))
     llm = load_llm("entity_extraction", llm_config, callbacks=callbacks, cache=cache)
-    return await run_extract_entities(llm, docs, entity_types, callbacks, args)
+    return await run_extract_entities(llm, docs, entity_types, relationship_types, callbacks, args)
 
 
 async def run_extract_entities(
     llm: ChatLLM,
     docs: list[Document],
     entity_types: EntityTypes,
+    relationship_types: RelationshipTypes,
     callbacks: VerbCallbacks | None,
     args: StrategyConfig,
 ) -> EntityExtractionResult:
@@ -62,6 +65,7 @@ async def run_extract_entities(
         list(text_list),
         {
             "entity_types": entity_types,
+            "relationship_types": relationship_types,
             "tuple_delimiter": tuple_delimiter,
             "record_delimiter": record_delimiter,
             "completion_delimiter": completion_delimiter,

@@ -21,6 +21,10 @@ class EntityExtractionConfig(LLMConfig):
         description="The entity extraction entity types to use.",
         default=defs.ENTITY_EXTRACTION_ENTITY_TYPES,
     )
+    relationship_types: list[str] = Field(
+        description="The entity extraction relationship types to use.",
+        default=defs.ENTITY_EXTRACTION_RELATIONSHIP_TYPES,
+    )
     max_gleanings: int = Field(
         description="The maximum number of entity gleanings to use.",
         default=defs.ENTITY_EXTRACTION_MAX_GLEANINGS,

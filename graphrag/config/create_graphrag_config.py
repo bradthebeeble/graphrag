@@ -457,6 +457,8 @@ def create_graphrag_config(
                 async_mode=hydrate_async_type(entity_extraction_config, async_mode),
                 entity_types=reader.list("entity_types")
                 or defs.ENTITY_EXTRACTION_ENTITY_TYPES,
+                relationship_types=reader.list("relationship_types")
+                or defs.ENTITY_EXTRACTION_RELATIONSHIP_TYPES,
                 max_gleanings=max_gleanings,
                 prompt=reader.str("prompt", Fragment.prompt_file),
                 strategy=entity_extraction_config.get("strategy"),

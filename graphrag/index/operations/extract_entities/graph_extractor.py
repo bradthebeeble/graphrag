@@ -27,6 +27,7 @@ DEFAULT_TUPLE_DELIMITER = "<|>"
 DEFAULT_RECORD_DELIMITER = "##"
 DEFAULT_COMPLETION_DELIMITER = "<|COMPLETE|>"
 DEFAULT_ENTITY_TYPES = ["organization", "person", "geo", "event"]
+DEFAULT_RELATIONSHIP_TYPES = ["related_to"]
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +48,7 @@ class GraphExtractor:
     _tuple_delimiter_key: str
     _record_delimiter_key: str
     _entity_types_key: str
+    _relationship_types_key: str
     _input_text_key: str
     _completion_delimiter_key: str
     _entity_name_key: str
@@ -64,6 +66,7 @@ class GraphExtractor:
         record_delimiter_key: str | None = None,
         input_text_key: str | None = None,
         entity_types_key: str | None = None,
+        relationship_types_key: str | None = None,
         completion_delimiter_key: str | None = None,
         prompt: str | None = None,
         join_descriptions=True,
@@ -82,6 +85,7 @@ class GraphExtractor:
             completion_delimiter_key or "completion_delimiter"
         )
         self._entity_types_key = entity_types_key or "entity_types"
+        self._relationship_types_key = relationship_types_key or "relationship_types"
         self._extraction_prompt = prompt or GRAPH_EXTRACTION_PROMPT
         self._max_gleanings = (
             max_gleanings
@@ -119,6 +123,9 @@ class GraphExtractor:
             self._entity_types_key: ",".join(
                 prompt_variables[self._entity_types_key] or DEFAULT_ENTITY_TYPES
             ),
+            self._relationship_types_key: ",".join(
+                prompt_variables[self._relationship_types_key] or DEFAULT_RELATIONSHIP_TYPES
+            ),
         }
 
         for doc_index, text in enumerate(texts):
@@ -152,6 +159,10 @@ class GraphExtractor:
     async def _process_document(
         self, text: str, prompt_variables: dict[str, str]
     ) -> str:
+        new_prompt = self._extraction_prompt.format(**{
+                **prompt_variables,
+                self._input_text_key: text,
+            }),
         response = await self._llm(
             self._extraction_prompt.format(**{
                 **prompt_variables,

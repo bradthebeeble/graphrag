@@ -223,7 +223,8 @@ def _graph_workflows(settings: GraphRagConfig) -> list[PipelineWorkflowReference
                     "strategy": settings.entity_extraction.resolved_strategy(
                         settings.root_dir, settings.encoding_model
                     ),
-                    "entity_types": settings.entity_extraction.entity_types, # TODO: add support for relationship types
+                    "entity_types": settings.entity_extraction.entity_types, 
+                    "relationship_types": settings.entity_extraction.relationship_types,
                 },
                 "summarize_descriptions": {
                     **settings.summarize_descriptions.parallelization.model_dump(),

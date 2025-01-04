@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 
 
 DEFAULT_ENTITY_TYPES = ["organization", "person", "geo", "event"]
+DEFAULT_RELATIONSHIP_TYPES = ["related_to"]
 
 
 async def extract_entities(
@@ -36,6 +37,7 @@ async def extract_entities(
     strategy: dict[str, Any] | None,
     async_mode: AsyncType = AsyncType.AsyncIO,
     entity_types=DEFAULT_ENTITY_TYPES,
+    relationship_types=DEFAULT_RELATIONSHIP_TYPES,
     num_threads: int = 4,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -53,6 +55,13 @@ async def extract_entities(
             - list
             - of
             - entity
+            - types
+            - to
+            - extract
+        relationship_types:
+            - list
+            - of
+            - relationship
             - types
             - to
             - extract
@@ -98,6 +107,8 @@ async def extract_entities(
     log.debug("entity_extract strategy=%s", strategy)
     if entity_types is None:
         entity_types = DEFAULT_ENTITY_TYPES
+    if relationship_types is None:
+        relationship_types = DEFAULT_RELATIONSHIP_TYPES
     strategy = strategy or {}
     strategy_exec = _load_strategy(
         strategy.get("type", ExtractEntityStrategyType.graph_intelligence)
@@ -113,6 +124,7 @@ async def extract_entities(
         result = await strategy_exec(
             [Document(text=text, id=id)],
             entity_types,
+            relationship_types,
             callbacks,
             cache,
             strategy_config,

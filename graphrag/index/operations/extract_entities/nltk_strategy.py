@@ -23,6 +23,7 @@ words.ensure_loaded()
 async def run(  # noqa RUF029 async is required for interface
     docs: list[Document],
     entity_types: EntityTypes,
+    relationship_types: list[str],  # added to match the typing, but not used
     callbacks: VerbCallbacks,  # noqa ARG001
     cache: PipelineCache,  # noqa ARG001
     args: StrategyConfig,  # noqa ARG001

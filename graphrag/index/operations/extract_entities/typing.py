@@ -17,6 +17,7 @@ ExtractedEntity = dict[str, Any]
 ExtractedRelationship = dict[str, Any]
 StrategyConfig = dict[str, Any]
 EntityTypes = list[str]
+RelationshipTypes = list[str]
 
 
 @dataclass
@@ -40,6 +41,7 @@ EntityExtractStrategy = Callable[
     [
         list[Document],
         EntityTypes,
+        RelationshipTypes,
         VerbCallbacks,
         PipelineCache,
         StrategyConfig,

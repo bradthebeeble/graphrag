@@ -41,6 +41,7 @@ def build_steps(
     extraction_strategy = entity_extraction_config.get("strategy")
     extraction_num_threads = entity_extraction_config.get("num_threads", 4)
     entity_types = entity_extraction_config.get("entity_types")
+    relationships_types = entity_extraction_config.get("relationship_types")
 
     summarize_descriptions_config = config.get("summarize_descriptions", {})
     summarization_strategy = summarize_descriptions_config.get("strategy")
@@ -57,6 +58,7 @@ def build_steps(
                 "extraction_num_threads": extraction_num_threads,
                 "extraction_async_mode": async_mode,
                 "entity_types": entity_types,
+                "relationships_types": relationships_types,
                 "summarization_strategy": summarization_strategy,
                 "summarization_num_threads": summarization_num_threads,
                 "snapshot_graphml_enabled": snapshot_graphml,
@@ -80,6 +82,7 @@ async def workflow(
     extraction_num_threads: int = 4,
     extraction_async_mode: AsyncType = AsyncType.AsyncIO,
     entity_types: list[str] | None = None,
+    relationships_types: list[str] | None = None,
     summarization_strategy: dict[str, Any] | None = None,
     summarization_num_threads: int = 4,
     snapshot_graphml_enabled: bool = False,
@@ -97,6 +100,7 @@ async def workflow(
         extraction_num_threads=extraction_num_threads,
         extraction_async_mode=extraction_async_mode,
         entity_types=entity_types,
+        relationships_types=relationships_types,
         summarization_strategy=summarization_strategy,
         summarization_num_threads=summarization_num_threads,
     )

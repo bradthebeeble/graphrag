@@ -27,6 +27,7 @@ async def extract_graph(
     extraction_num_threads: int = 4,
     extraction_async_mode: AsyncType = AsyncType.AsyncIO,
     entity_types: list[str] | None = None,
+    relationships_types: list[str] | None = None,
     summarization_strategy: dict[str, Any] | None = None,
     summarization_num_threads: int = 4,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -41,6 +42,7 @@ async def extract_graph(
         strategy=extraction_strategy,
         async_mode=extraction_async_mode,
         entity_types=entity_types,
+        relationship_types=relationships_types,
         num_threads=extraction_num_threads,
     )
 
