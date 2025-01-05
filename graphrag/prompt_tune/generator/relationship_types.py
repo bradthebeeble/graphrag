@@ -23,7 +23,7 @@ async def generate_relationship_types(
     llm: ChatLLM,
     domain: str,
     persona: str,
-    entity_types: list[str] | None,
+    entity_types: list[str] | str | None,
     docs: str | list[str],
     task: str = DEFAULT_TASK,
     json_mode: bool = False,

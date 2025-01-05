@@ -85,6 +85,7 @@ EXAMPLE_EXTRACTION_TEMPLATE = """
 Example {n}:
 
 entity_types: [{entity_types}]
+relationship_types: [{relationship_types}]
 text:
 {input_text}
 ------------------------

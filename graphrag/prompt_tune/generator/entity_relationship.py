@@ -44,7 +44,7 @@ async def generate_entity_relationship_examples(
         relationship_types_str = (
             relationship_types
             if isinstance(relationship_types, str)
-            else ", ".join(map(str, relationship_types))
+            else ", ".join(map(str, relationship_types or []))
         )
 
         messages = [
@@ -69,7 +69,7 @@ async def generate_entity_relationship_examples(
         ]
 
     messages = messages[:MAX_EXAMPLES]
-
+        
     tasks = [llm(message, history=history, json=json_mode) for message in messages]
 
     responses = await asyncio.gather(*tasks)

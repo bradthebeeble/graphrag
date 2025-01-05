@@ -51,6 +51,7 @@ Output:
 ######################
 Example 2:
 Entity_types: ORGANIZATION
+Relationship_types: owned_by, operates_in, founded_by
 Text:
 TechGlobal's (TG) stock skyrocketed in its opening day on the Global Exchange Thursday. But IPO experts warn that the semiconductor corporation's debut on the public markets isn't indicative of how other newly listed companies may perform.
 
@@ -67,6 +68,7 @@ Output:
 ######################
 Example 3:
 Entity_types: ORGANIZATION,GEO,PERSON
+Relationship_types: negotiates_with, mediates_between, released_with, detained_by
 Text:
 Five Aurelians jailed for 8 years in Firuzabad and widely regarded as hostages are on their way home to Aurelia.
 
@@ -124,6 +126,7 @@ Output:
 -Real Data-
 ######################
 entity_types: {entity_types}
+relationship_types: {relationship_types}
 text: {input_text}
 ######################
 output:
@@ -147,12 +150,13 @@ Format each entity output as a JSON entry with the following format:
 For each pair of related entities, extract the following information:
 - source_entity: name of the source entity, as identified in step 1
 - target_entity: name of the target entity, as identified in step 1
+- relationship_type: One of the following types: [{relationship_types}]
 - relationship_description: explanation as to why you think the source entity and the target entity are related to each other
 - relationship_strength: an integer score between 1 to 10, indicating strength of the relationship between the source entity and target entity
 
 Format each relationship as a JSON entry with the following format:
 
-{{"source": <source_entity>, "target": <target_entity>, "relationship": <relationship_description>, "relationship_strength": <relationship_strength>}}
+{{"source": <source_entity>, "target": <target_entity>, "relationship": <relationship_type>, <relationship_description>, "relationship_strength": <relationship_strength>}}
 
 3. Return output in {language} as a single list of all JSON entities and relationships identified in steps 1 and 2.
 
@@ -250,6 +254,7 @@ Format each entity as ("entity"{{tuple_delimiter}}<entity_name>{{tuple_delimiter
 For each pair of related entities, extract the following information:
 - source_entity: name of the source entity, as identified in step 1
 - target_entity: name of the target entity, as identified in step 1
+- relationship_type: One of the following types: [{relationship_types}]
 - relationship_description: explanation as to why you think the source entity and the target entity are related to each other
 - relationship_strength: a numeric score indicating strength of the relationship between the source entity and target entity
 Format each relationship as ("relationship"{{tuple_delimiter}}<source_entity>{{tuple_delimiter}}<target_entity>{{tuple_delimiter}}<relationship_description>{{tuple_delimiter}}<relationship_strength>)

@@ -73,7 +73,7 @@ def create_entity_extraction_prompt(
         input = docs[i]
         example_formatted = (
             EXAMPLE_EXTRACTION_TEMPLATE.format(
-                n=i + 1, input_text=input, entity_types=entity_types, output=output
+                n=i + 1, input_text=input, entity_types=entity_types, relationship_types=relationship_types, output=output
             )
             if entity_types
             else UNTYPED_EXAMPLE_EXTRACTION_TEMPLATE.format(

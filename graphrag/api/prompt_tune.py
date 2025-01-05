@@ -38,6 +38,7 @@ from graphrag.prompt_tune.generator.entity_summarization_prompt import (
     create_entity_summarization_prompt,
 )
 from graphrag.prompt_tune.generator.entity_types import generate_entity_types
+from graphrag.prompt_tune.generator.relationship_types import generate_relationship_types
 from graphrag.prompt_tune.generator.language import detect_language
 from graphrag.prompt_tune.generator.persona import generate_persona
 from graphrag.prompt_tune.loader.input import MIN_CHUNK_SIZE, load_docs_in_chunks
@@ -129,12 +130,25 @@ async def generate_indexing_prompts(
             docs=doc_list,
             json_mode=config.llm.model_supports_json or False,
         )
+        logger.info(f"Generated entity types: {entity_types}") 
+
+    logger.info("Generating relationship types...")
+    relationship_types = await generate_relationship_types(
+        llm,
+        domain=domain,
+        persona=persona,
+        entity_types=entity_types,
+        docs=doc_list,
+        json_mode=config.llm.model_supports_json or False,
+    )
+    logger.info(f"Generated relationship types: {relationship_types}") 
 
     logger.info("Generating entity relationship examples...")
     examples = await generate_entity_relationship_examples(
         llm,
         persona=persona,
         entity_types=entity_types,
+        relationship_types=relationship_types,
         docs=doc_list,
         language=language,
         json_mode=False,  # config.llm.model_supports_json should be used, but these prompts are used in non-json mode by the index engine
@@ -143,6 +157,7 @@ async def generate_indexing_prompts(
     logger.info("Generating entity extraction prompt...")
     entity_extraction_prompt = create_entity_extraction_prompt(
         entity_types=entity_types,
+        relationship_types=relationship_types,
         docs=doc_list,
         examples=examples,
         language=language,
@@ -151,6 +166,7 @@ async def generate_indexing_prompts(
         max_token_count=max_tokens,
         min_examples_required=min_examples_required,
     )
+    print(entity_extraction_prompt)
 
     logger.info("Generating entity summarization prompt...")
     entity_summarization_prompt = create_entity_summarization_prompt(
