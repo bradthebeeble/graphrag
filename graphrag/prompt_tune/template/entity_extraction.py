@@ -36,6 +36,7 @@ Format each relationship as ("relationship"{{tuple_delimiter}}<source_entity>{{t
 -Real Data-
 ######################
 entity_types: [{entity_types}]
+relationship_types: [{relationship_types}]
 text: {{input_text}}
 ######################
 output:"""
@@ -75,6 +76,7 @@ Format each relationship as a JSON entry with the following format:
 -Real Data-
 ######################
 entity_types: {entity_types}
+relationship_types: {relationship_types}
 text: {{input_text}}
 ######################
 output:"""
@@ -138,6 +140,7 @@ Format each relationship as ("relationship"{{tuple_delimiter}}<source_entity>{{t
 
 -Real Data-
 ######################
+relationship_types: [{relationship_types}]
 text: {{input_text}}
 ######################
 output:
