@@ -473,3 +473,71 @@ def _query_cli(
             )
         case _:
             raise ValueError(INVALID_METHOD_ERROR)
+
+@app.command("init")
+
+
+@app.command("generate")
+def _generate_cli(
+    history: Annotated[
+        list[str],
+        typer.Option(
+            help="History of past questions from the user"
+        ),
+    ] = [],
+    config: Annotated[
+        Path | None,
+        typer.Option(
+            help="The configuration to use.",
+            exists=True,
+            file_okay=True,
+            readable=True,
+            autocompletion=path_autocomplete(
+                file_okay=True, dir_okay=False, match_wildcard="*"
+            ),
+        ),
+    ] = None,
+    data: Annotated[
+        Path | None,
+        typer.Option(
+            help="Indexing pipeline output directory (i.e. contains the parquet files).",
+            exists=True,
+            dir_okay=True,
+            readable=True,
+            resolve_path=True,
+            autocompletion=path_autocomplete(
+                file_okay=False, dir_okay=True, match_wildcard="*"
+            ),
+        ),
+    ] = None,
+    root: Annotated[
+        Path,
+        typer.Option(
+            help="The project root directory.",
+            exists=True,
+            dir_okay=True,
+            writable=True,
+            resolve_path=True,
+            autocompletion=path_autocomplete(
+                file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
+            ),
+        ),
+    ] = Path(),  # set default to current directory
+    community_level: Annotated[
+        int,
+        typer.Option(
+            help="The community level in the Leiden community hierarchy from which to load community reports. Higher values represent reports from smaller communities."
+        ),
+    ] = 2,
+):
+    """Build a knowledge graph index."""
+    from graphrag.cli.query import run_question_generator
+
+
+    run_question_generator(
+                config_filepath=config,
+                data_dir=data,
+                root_dir=root,
+                community_level=community_level,
+                query=history,
+            )

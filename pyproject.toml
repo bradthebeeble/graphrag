@@ -143,6 +143,7 @@ index = "python -m graphrag index"
 update = "python -m graphrag update"
 init = "python -m graphrag init"
 query = "python -m graphrag query"
+generate = "python -m graphrag generate"
 prompt_tune = "python -m graphrag prompt-tune"
 # Pass in a test pattern
 test_only = "pytest -s -k"

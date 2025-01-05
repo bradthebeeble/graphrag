@@ -67,6 +67,7 @@ def read_relationships(
     short_id_col: str | None = "human_readable_id",
     source_col: str = "source",
     target_col: str = "target",
+    type_col: str = "type",
     description_col: str | None = "description",
     rank_col: str | None = "combined_degree",
     description_embedding_col: str | None = "description_embedding",
@@ -82,6 +83,7 @@ def read_relationships(
             short_id=to_optional_str(row, short_id_col) if short_id_col else str(idx),
             source=to_str(row, source_col),
             target=to_str(row, target_col),
+            type=to_str(row, type_col),
             description=to_optional_str(row, description_col),
             description_embedding=to_optional_list(
                 row, description_embedding_col, item_type=float

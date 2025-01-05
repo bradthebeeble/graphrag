@@ -36,6 +36,7 @@ from graphrag.query.factory import (
     get_drift_search_engine,
     get_global_search_engine,
     get_local_search_engine,
+    get_local_question_generator,
 )
 from graphrag.query.indexer_adapters import (
     read_indexer_communities,
@@ -46,6 +47,7 @@ from graphrag.query.indexer_adapters import (
     read_indexer_reports,
     read_indexer_text_units,
 )
+from graphrag.query.question_gen.base import QuestionResult
 from graphrag.utils.cli import redact
 from graphrag.utils.embeddings import create_collection_name
 from graphrag.vector_stores.base import BaseVectorStore
@@ -588,3 +590,77 @@ def _load_search_prompt(root_dir: str, prompt_config: str | None) -> str | None:
         if prompt_file.exists():
             return prompt_file.read_bytes().decode(encoding="utf-8")
     return None
+
+@validate_call(config={"arbitrary_types_allowed": True})
+async def generate_question(
+    config: GraphRagConfig,
+    nodes: pd.DataFrame,
+    entities: pd.DataFrame,
+    community_reports: pd.DataFrame,
+    text_units: pd.DataFrame,
+    relationships: pd.DataFrame,
+    covariates: pd.DataFrame | None,
+    community_level: int,
+    query: list[str],
+) -> list[str]:
+    """ Generate candidate questions related to specific entities.
+
+    Parameters
+    ----------
+    config : GraphRagConfig
+        A graphrag configuration (from settings.yaml).
+    nodes : pd.DataFrame
+        A DataFrame containing the final nodes (from create_final_nodes.parquet).
+    entities : pd.DataFrame
+        A DataFrame containing the final entities (from create_final_entities.parquet).
+    community_reports : pd.DataFrame
+        A DataFrame containing the final community reports (from create_final_community_reports.parquet).
+    text_units : pd.DataFrame
+        A DataFrame containing the final text units (from create_final_text_units.parquet).
+    relationships : pd.DataFrame
+        A DataFrame containing the final relationships (from create_final_relationships.parquet).
+    covariates : pd.DataFrame, optional
+        A DataFrame containing the final covariates (from create_final_covariates.parquet), by default None.
+    community_level : int
+        The community level to search at.
+    response_type : str
+        The response type to return.
+    query : list[str]
+        The user history queries to search for.
+
+    Returns
+    -------
+    str or dict[str, Any] or list[dict[str, Any]]
+        The search response, which can be a string, a dictionary, or a list of dictionaries.
+
+    Raises
+    ------
+    TODO: Document any exceptions to expect.
+    """
+    vector_store_args = config.embeddings.vector_store
+    logger.info(f"Vector Store Args: {redact(vector_store_args)}")  # type: ignore # noqa
+
+    description_embedding_store = _get_embedding_store(
+        config_args=vector_store_args,  # type: ignore
+        embedding_name=entity_description_embedding,
+    )
+
+    entities_ = read_indexer_entities(nodes, entities, community_level)
+    covariates_ = read_indexer_covariates(covariates) if covariates is not None else []
+    prompt = _load_search_prompt(config.root_dir, config.local_search.prompt)
+
+    question_generator = get_local_question_generator(
+        config=config,
+        reports=read_indexer_reports(community_reports, nodes, community_level),
+        text_units=read_indexer_text_units(text_units),
+        entities=entities_,
+        relationships=read_indexer_relationships(relationships),
+        covariates={"claims": covariates_},
+        description_embedding_store=description_embedding_store,  # type: ignore
+    )
+    candidate_questions: QuestionResult = await question_generator.agenerate(
+        question_history=query, context_data=None, question_count=5
+    )
+
+    response = candidate_questions.response
+    return response

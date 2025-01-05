@@ -17,6 +17,7 @@ from graphrag.api.query import (
     global_search_streaming,
     local_search,
     local_search_streaming,
+    generate_question,
 )
 from graphrag.prompt_tune.types import DocSelectionType
 
@@ -27,6 +28,7 @@ __all__ = [  # noqa: RUF022
     "global_search",
     "global_search_streaming",
     "local_search",
+    "generate_question",
     "local_search_streaming",
     "drift_search",
     "basic_search",
