@@ -20,6 +20,7 @@ ENTITY_EXTRACTION_FILENAME = "entity_extraction.txt"
 
 def create_entity_extraction_prompt(
     entity_types: str | list[str] | None,
+    relationship_types: str | list[str] | None,
     docs: list[str],
     examples: list[str],
     language: str,
