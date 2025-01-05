@@ -56,13 +56,14 @@ def create_entity_extraction_prompt(
     )
     if isinstance(entity_types, list):
         entity_types = ", ".join(map(str, entity_types))
+    if isinstance(relationship_types, list):
+        relationship_types = ", ".join(map(str, relationship_types))
 
     tokens_left = (
         max_token_count
         - num_tokens_from_string(prompt, encoding_name=encoding_model)
-        - num_tokens_from_string(entity_types, encoding_name=encoding_model)
-        if entity_types
-        else 0
+        - num_tokens_from_string(entity_types or "", encoding_name=encoding_model)
+        - num_tokens_from_string(relationship_types or "", encoding_name=encoding_model)
     )
 
     examples_prompt = ""
@@ -93,10 +94,17 @@ def create_entity_extraction_prompt(
 
     prompt = (
         prompt.format(
-            entity_types=entity_types, examples=examples_prompt, language=language
+            entity_types=entity_types,
+            relationship_types=relationship_types,
+            examples=examples_prompt,
+            language=language
         )
         if entity_types
-        else prompt.format(examples=examples_prompt, language=language)
+        else prompt.format(
+            relationship_types=relationship_types,
+            examples=examples_prompt,
+            language=language
+        )
     )
 
     if output_path:
