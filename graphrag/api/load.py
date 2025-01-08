@@ -1,0 +1,237 @@
+import asyncio
+from graphrag.cli.query import _resolve_output_files
+from graphrag.config.models.graph_rag_config import GraphRagConfig
+from graphrag.logger.base import ProgressLogger
+import pandas as pd
+from neo4j import Driver, GraphDatabase
+import time
+import logging
+
+from graphrag.logger.factory import LoggerFactory
+from graphrag.logger.types import LoggerType
+
+log = logging.getLogger(__name__)
+
+
+def _logger(logger: ProgressLogger):
+    def info(msg: str, verbose: bool = False):
+        log.info(msg)
+        if verbose:
+            logger.info(msg)
+
+    def error(msg: str, verbose: bool = False):
+        log.error(msg)
+        if verbose:
+            logger.error(msg)
+
+    def success(msg: str, verbose: bool = False):
+        log.info(msg)
+        if verbose:
+            logger.success(msg)
+
+    return info, error, success
+
+def load_data(
+    config: GraphRagConfig,
+    progress_logger: ProgressLogger | None = None,
+    load_communities: bool = False,
+) -> bool:
+    """Run the pipeline with the given configuration.
+
+    Parameters
+    ----------
+    config : GraphRagConfig
+        The configuration.
+    progress_logger : ProgressLogger | None default=None
+        The progress logger.
+
+    Returns
+    -------
+    bool
+        True if the pipeline ran successfully
+    """
+
+    driver: Driver
+
+
+    def batched_import(statement, df, batch_size=1000):
+        """
+        Import a dataframe into Neo4j using a batched approach.
+        Parameters: statement is the Cypher query to execute, df is the dataframe to import, and batch_size is the number of rows to import in each batch.
+        """
+        total = len(df)
+        start_s = time.time()
+        for start in range(0,total, batch_size):
+            batch = df.iloc[start: min(start+batch_size,total)]
+            result = driver.execute_query("UNWIND $rows AS value " + statement,
+                                        rows=batch.to_dict('records'),
+                                        database_=NEO4J_DATABASE)
+            print(result.summary.counters)
+        print(f'{total} rows in { time.time() - start_s} s.')
+        return total
+    
+    def create_db_constraints():
+        """
+        create constraints, idempotent operation
+        """
+        statements = """
+            create constraint chunk_id if not exists for (c:__Chunk__) require c.id is unique;
+            create constraint document_id if not exists for (d:__Document__) require d.id is unique;
+            create constraint entity_id if not exists for (c:__Community__) require c.community is unique;
+            create constraint entity_id if not exists for (e:__Entity__) require e.id is unique;
+            create constraint entity_title if not exists for (e:__Entity__) require e.name is unique;
+            create constraint entity_title if not exists for (e:__Covariate__) require e.title is unique;
+            create constraint related_id if not exists for ()-[rel:RELATED]->() require rel.id is unique;
+            """.split(";")
+
+        for statement in statements:
+            if len((statement or "").strip()) > 0:
+                driver.execute_query(statement)
+
+    def import_documents(df: pd.DataFrame):
+        """
+        Import documents into the database.
+        """
+
+        statement = """
+                    MERGE (d:__Document__ {id:value.id})
+                    SET d += value {.title}
+                    """
+
+        print(f"Importing {len(df)} documents")
+        batched_import(statement, df)
+    
+    def load_text_units(df: pd.DataFrame):
+        """
+        Load text units into the database.
+        """
+
+        statement = """
+                    MERGE (c:__Chunk__ {id:value.id})
+                    SET c += value {.text, .n_tokens}
+                    WITH c, value
+                    UNWIND value.document_ids AS document
+                    MATCH (d:__Document__ {id:document})
+                    MERGE (c)-[:PART_OF]->(d)
+                    """
+        print(f"Loading {len(df)} text units")
+        batched_import(statement, df)
+
+    def load_nodes(df: pd.DataFrame):
+        """
+        Load nodes into the database.
+        """
+
+        statement = """
+                    MERGE (e:__Entity__ {id:value.id})
+                    SET e += value {.human_readable_id, .description, title:replace(value.title,'"','')}
+                    WITH e, value
+                    CALL apoc.create.addLabels(e, case when coalesce(value.type,"") = "" then [] else [apoc.text.upperCamelCase(replace(value.type,'"',''))] end) yield node
+                    UNWIND value.text_unit_ids AS text_unit
+                    MATCH (c:__Chunk__ {id:text_unit})
+                    MERGE (c)-[:HAS_ENTITY]->(e)
+                    """
+        print(f"Loading {len(df)} entity nodes")
+        batched_import(statement, df)
+    
+    def load_relationships(df: pd.DataFrame):
+        """
+        Load relationships into the database.
+        """
+
+        statement = """
+                    MATCH (source:__Entity__ {title: replace(value.source, '"', '')})
+                    MATCH (target:__Entity__ {title: replace(value.target, '"', '')})
+                    CALL apoc.merge.relationship(
+                        source,
+                        value.type,
+                        {id: value.id},
+                        value {.rank, .combined_degree, .human_readable_id, .description, .text_unit_ids},
+                        target
+                    ) YIELD rel
+                    RETURN count(*) AS createdRels
+                    """
+        print(f"Loading {len(df)} relationships (edges)")
+        batched_import(statement, df)
+
+    def load_communities(df: pd.DataFrame):
+        """
+        Load communities into the database.
+        """
+
+        statement = """
+                    MERGE (c:__Community__ {community: value.id})
+                    SET c += value {.level, .title, .community}
+                    WITH c, value
+                    UNWIND value.relationship_ids AS rel_id
+                    MATCH (start:__Entity__)-[r {id: rel_id}]->(end:__Entity__)
+                    MERGE (start)-[:IN_COMMUNITY]->(c)
+                    MERGE (end)-[:IN_COMMUNITY]->(c)
+                    RETURN count(DISTINCT c) AS createdCommunities
+                    """
+        print(f"Loading {len(df)} communities")
+        batched_import(statement, df)
+
+    def load_communities_reports(df: pd.DataFrame):
+        """
+        Load community reports into the database.
+        """
+
+        statement = """
+                    MERGE (c:__Community__ {community:value.community})
+                    SET c += value {.level, .title, .rank, .rank_explanation, .full_content, .summary}
+                    WITH c, value
+                    UNWIND range(0, size(value.findings)-1) AS finding_idx
+                    WITH c, value, finding_idx, value.findings[finding_idx] as finding
+                    MERGE (c)-[:HAS_FINDING]->(f:Finding {id:finding_idx})
+                    SET f += finding
+                    """
+        print(f"Loading {len(df)} communities reports")
+        batched_import(statement, df)
+
+    if progress_logger is None:
+            progress_logger = LoggerFactory().create_logger(LoggerType(LoggerType.RICH))
+
+    info, error, success = _logger(progress_logger)
+
+
+    # Load neo4j config
+    NEO4J_URI = config.neo4j.uri
+    NEO4J_USERNAME = config.neo4j.username
+    NEO4J_PASSWORD = config.neo4j.password
+    NEO4J_DATABASE = config.neo4j.database
+    # Check if any neo4j config is not initialized
+    if not NEO4J_URI or not NEO4J_USERNAME or not NEO4J_PASSWORD or not NEO4J_DATABASE:
+        raise ValueError("Neo4j configuration is incomplete. Please provide all required parameters.")
+    try:
+        driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
+        driver.verify_connectivity()
+        info("Neo4j driver initialized successfully.")
+        create_db_constraints()
+        dataframe_dict  = _resolve_output_files(
+                    config=config,
+                    output_list=[
+                        "create_final_documents.parquet",
+                        "create_final_nodes.parquet",
+                        "create_final_communities.parquet",
+                        "create_final_community_reports.parquet",
+                        "create_final_text_units.parquet",
+                        "create_final_relationships.parquet",
+                        "create_final_entities.parquet",
+                    ],
+                    optional_list=[
+                        "create_final_covariates.parquet",
+                    ],
+                )
+        # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
+        # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
+        # load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
+        # load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
+        if load_communities:
+            load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
+            # load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
+
+        return True
+    except Exception as e:
+        error(f"Failed to connect to the database: {e}")
+        return False
