@@ -9,6 +9,7 @@ from pathlib import Path
 
 import graphrag.api as api
 
+from graphrag.cli.query import _resolve_output_files
 from graphrag.logger.factory import LoggerFactory, LoggerType
 from graphrag.config.load_config import load_config
 from graphrag.config.resolve_path import resolve_paths
@@ -77,6 +78,7 @@ def load_cli(
         load_communities=load_communities
     )
 
+
 def _run_load(
     config,
     verbose,
@@ -102,10 +104,27 @@ def _run_load(
         )
     _register_signal_handlers(progress_logger)
 
+    dataframes =  _resolve_output_files(
+                    config=config,
+                    output_list=[
+                        "create_final_documents.parquet",
+                        "create_final_nodes.parquet",
+                        "create_final_communities.parquet",
+                        "create_final_community_reports.parquet",
+                        "create_final_text_units.parquet",
+                        "create_final_relationships.parquet",
+                        "create_final_entities.parquet",
+                    ],
+                    optional_list=[
+                        "create_final_covariates.parquet",
+                    ],
+                )
+
     output = api.load_data(
             config=config,
+            dataframe_dict = dataframes,
             progress_logger=progress_logger,
-            load_communities=load_communities
+            should_load_communities=load_communities,
     )
     encountered_errors = not output
 

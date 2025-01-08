@@ -1,5 +1,4 @@
 import asyncio
-from graphrag.cli.query import _resolve_output_files
 from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.logger.base import ProgressLogger
 import pandas as pd
@@ -33,8 +32,9 @@ def _logger(logger: ProgressLogger):
 
 def load_data(
     config: GraphRagConfig,
+    dataframe_dict: dict[str, pd.DataFrame],
     progress_logger: ProgressLogger | None = None,
-    load_communities: bool = False,
+    should_load_communities: bool = False,
 ) -> bool:
     """Run the pipeline with the given configuration.
 
@@ -142,9 +142,10 @@ def load_data(
         statement = """
                     MATCH (source:__Entity__ {title: replace(value.source, '"', '')})
                     MATCH (target:__Entity__ {title: replace(value.target, '"', '')})
+                    UNWIND split(value.type, ',') AS rel_type
                     CALL apoc.merge.relationship(
                         source,
-                        value.type,
+                        rel_type,
                         {id: value.id},
                         value {.rank, .combined_degree, .human_readable_id, .description, .text_unit_ids},
                         target
@@ -211,26 +212,11 @@ def load_data(
         driver.verify_connectivity()
         info("Neo4j driver initialized successfully.")
         create_db_constraints()
-        dataframe_dict  = _resolve_output_files(
-                    config=config,
-                    output_list=[
-                        "create_final_documents.parquet",
-                        "create_final_nodes.parquet",
-                        "create_final_communities.parquet",
-                        "create_final_community_reports.parquet",
-                        "create_final_text_units.parquet",
-                        "create_final_relationships.parquet",
-                        "create_final_entities.parquet",
-                    ],
-                    optional_list=[
-                        "create_final_covariates.parquet",
-                    ],
-                )
         import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
         load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
         load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
         load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
-        if load_communities:
+        if should_load_communities:
             load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
             load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
 
