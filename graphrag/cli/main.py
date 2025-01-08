@@ -95,25 +95,6 @@ class SearchType(Enum):
         return self.value
 
 
-@app.command("init")
-def _initialize_cli(
-    root: Annotated[
-        Path,
-        typer.Option(
-            help="The project root directory.",
-            dir_okay=True,
-            writable=True,
-            resolve_path=True,
-            autocompletion=path_autocomplete(
-                file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
-            ),
-        ),
-    ],
-):
-    """Generate a default configuration file."""
-    from graphrag.cli.initialize import initialize_project_at
-
-    initialize_project_at(path=root)
 
 
 @app.command("index")
@@ -251,6 +232,57 @@ def _update_cli(
         output_dir=output,
     )
 
+@app.command("load")
+def _load_cli(
+    config: Annotated[
+        Path | None,
+        typer.Option(
+            help="The configuration to use.", exists=True, file_okay=True, readable=True
+        ),
+    ] = None,
+    root: Annotated[
+        Path,
+        typer.Option(
+            help="The project root directory.",
+            exists=True,
+            dir_okay=True,
+            writable=True,
+            resolve_path=True,
+            autocompletion=path_autocomplete(
+                file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
+            ),
+        ),
+    ] = Path(),  # set default to current directory
+    verbose: Annotated[
+        bool, typer.Option(help="Run the indexing pipeline with verbose logging")
+    ] = False,
+    logger: Annotated[
+        LoggerType, typer.Option(help="The progress logger to use.")
+    ] = LoggerType.RICH,
+    output: Annotated[
+        Path | None,
+        typer.Option(
+            help="Indexing pipeline output directory. Overrides storage.base_dir in the configuration file.",
+            dir_okay=True,
+            writable=True,
+            resolve_path=True,
+        ),
+    ] = None,
+    load_communities: Annotated[
+        bool, typer.Option(help="Load communities data into the graph db.")
+    ] = False,
+):
+    """Build a knowledge graph index."""
+    from graphrag.cli.load import load_cli
+
+    load_cli(
+        root_dir=root,
+        verbose=verbose,
+        logger=LoggerType(logger),
+        config_filepath=config,
+        output_dir=output,
+        load_communities=load_communities
+    )
 
 @app.command("prompt-tune")
 def _prompt_tune_cli(
@@ -475,7 +507,24 @@ def _query_cli(
             raise ValueError(INVALID_METHOD_ERROR)
 
 @app.command("init")
+def _initialize_cli(
+    root: Annotated[
+        Path,
+        typer.Option(
+            help="The project root directory.",
+            dir_okay=True,
+            writable=True,
+            resolve_path=True,
+            autocompletion=path_autocomplete(
+                file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
+            ),
+        ),
+    ],
+):
+    """Generate a default configuration file."""
+    from graphrag.cli.initialize import initialize_project_at
 
+    initialize_project_at(path=root)
 
 @app.command("generate")
 def _generate_cli(

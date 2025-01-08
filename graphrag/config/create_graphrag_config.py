@@ -41,6 +41,7 @@ from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.config.models.input_config import InputConfig
 from graphrag.config.models.llm_parameters import LLMParameters
 from graphrag.config.models.local_search_config import LocalSearchConfig
+from graphrag.config.models.neo4j_config import Neo4jConfig
 from graphrag.config.models.parallelization_parameters import ParallelizationParameters
 from graphrag.config.models.reporting_config import ReportingConfig
 from graphrag.config.models.snapshots_config import SnapshotsConfig
@@ -433,6 +434,14 @@ def create_graphrag_config(
             umap_model = UmapConfig(
                 enabled=reader.bool(Fragment.enabled) or defs.UMAP_ENABLED,
             )
+        with reader.envvar_prefix(Section.neo4j), reader.use(values.get("neo4j")):
+            neo4j_model = Neo4jConfig(
+                uri=reader.str(Fragment.uri),
+                username=reader.str(Fragment.username) or "neo4j",
+                password=reader.str(Fragment.password),
+                database=reader.str(Fragment.database) or "neo4j",
+
+            )
 
         entity_extraction_config = values.get("entity_extraction") or {}
         with (
@@ -683,6 +692,7 @@ def create_graphrag_config(
         global_search=global_search_model,
         drift_search=drift_search_model,
         basic_search=basic_search_model,
+        neo4j=neo4j_model,
     )
 
 
@@ -701,6 +711,7 @@ class Fragment(str, Enum):
     conn_string = "CONNECTION_STRING"
     container_name = "CONTAINER_NAME"
     cosmosdb_account_url = "COSMOSDB_ACCOUNT_URL"
+    database = "DATABASE"
     deployment_name = "DEPLOYMENT_NAME"
     description = "DESCRIPTION"
     enabled = "ENABLED"
@@ -717,6 +728,7 @@ class Fragment(str, Enum):
     n = "N"
     model = "MODEL"
     model_supports_json = "MODEL_SUPPORTS_JSON"
+    password = "PASSWORD"
     prompt_file = "PROMPT_FILE"
     request_timeout = "REQUEST_TIMEOUT"
     rpm = "REQUESTS_PER_MINUTE"
@@ -726,6 +738,8 @@ class Fragment(str, Enum):
     thread_stagger = "THREAD_STAGGER"
     tpm = "TOKENS_PER_MINUTE"
     type = "TYPE"
+    uri = "URI"
+    username = "USERNAME"
 
 
 class Section(str, Enum):
@@ -748,6 +762,7 @@ class Section(str, Enum):
     summarize_descriptions = "SUMMARIZE_DESCRIPTIONS"
     umap = "UMAP"
     update_index_storage = "UPDATE_INDEX_STORAGE"
+    neo4j = "NEO4J" 
     local_search = "LOCAL_SEARCH"
     global_search = "GLOBAL_SEARCH"
     drift_search = "DRIFT_SEARCH"

@@ -20,6 +20,7 @@ from graphrag.config.models.global_search_config import GlobalSearchConfig
 from graphrag.config.models.input_config import InputConfig
 from graphrag.config.models.llm_config import LLMConfig
 from graphrag.config.models.local_search_config import LocalSearchConfig
+from graphrag.config.models.neo4j_config import Neo4jConfig
 from graphrag.config.models.reporting_config import ReportingConfig
 from graphrag.config.models.snapshots_config import SnapshotsConfig
 from graphrag.config.models.storage_config import StorageConfig
@@ -161,3 +162,7 @@ class GraphRagConfig(LLMConfig):
         description="The workflows to skip, usually for testing reasons.", default=[]
     )
     """The workflows to skip, usually for testing reasons."""
+    neo4j: Neo4jConfig = Field(
+        description="The neo4j configuration.", default=Neo4jConfig()
+    )
+    """The neo4j configuration."""

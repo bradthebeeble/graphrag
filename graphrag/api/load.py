@@ -226,13 +226,13 @@ def load_data(
                         "create_final_covariates.parquet",
                     ],
                 )
-        # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
-        # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
-        # load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
-        # load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
+        import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
+        load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
+        load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
+        load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
         if load_communities:
             load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
-            # load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
+            load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
 
         return True
     except Exception as e:

@@ -118,6 +118,12 @@ snapshots:
   embeddings: false
   transient: false
 
+  neo4j:
+    uri: ${{NEO4J_URI}} # set this in the generated .env file
+    username: ${{NEO4J_USERNAME}} # set this in the generated .env file
+    password: ${{NEO4J_PASSWORD}} # set this in the generated .env file
+    database: ${{NEO4J_DATABASE}} # set this in the generated .env file
+
 ### Query settings ###
 ## The prompt locations are required here, but each search method has a number of optional knobs that can be tuned.
 ## See the config docs: https://microsoft.github.io/graphrag/config/yaml/#query
@@ -139,4 +145,8 @@ basic_search:
 
 INIT_DOTENV = """\
 GRAPHRAG_API_KEY=<API_KEY>
+NEO4J_URI=<NEO4J_URI>
+NEO4J_USERNAME=<NEO4J_USERNAME>
+NEO4J_PASSWORD=<NEO4J_PASSWORD>
+NEO4J_DATABASE=<NEO4J_DATABASE>
 """

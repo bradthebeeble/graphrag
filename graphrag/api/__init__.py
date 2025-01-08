@@ -8,6 +8,7 @@ Backwards compatibility is not guaranteed at this time.
 """
 
 from graphrag.api.index import build_index
+from graphrag.api.load import load_data
 from graphrag.api.prompt_tune import generate_indexing_prompts
 from graphrag.api.query import (
     basic_search,
@@ -24,6 +25,8 @@ from graphrag.prompt_tune.types import DocSelectionType
 __all__ = [  # noqa: RUF022
     # index API
     "build_index",
+    # load API
+    "load_data",
     # query API
     "global_search",
     "global_search_streaming",
