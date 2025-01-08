@@ -160,14 +160,17 @@ def load_data(
         """
 
         statement = """
+                    MATCH (start:__Entity__)-[r]->(end:__Entity__)
+                    WHERE r.id IN value.relationship_ids
+                    WITH DISTINCT value, collect(DISTINCT r) as rels, 
+                         collect(DISTINCT start) as starts, 
+                         collect(DISTINCT end) as ends
                     MERGE (c:__Community__ {community: value.id})
-                    SET c += value {.level, .title, .community}
-                    WITH c, value
-                    UNWIND value.relationship_ids AS rel_id
-                    MATCH (start:__Entity__)-[r {id: rel_id}]->(end:__Entity__)
-                    MERGE (start)-[:IN_COMMUNITY]->(c)
-                    MERGE (end)-[:IN_COMMUNITY]->(c)
-                    RETURN count(DISTINCT c) AS createdCommunities
+                    ON CREATE SET c += value {.level, .title}
+                    ON MATCH SET c += value {.level, .title}
+                    WITH c, starts, ends
+                    UNWIND starts + ends as node
+                    MERGE (node)-[:IN_COMMUNITY]->(c)
                     """
         print(f"Loading {len(df)} communities")
         batched_import(statement, df)
