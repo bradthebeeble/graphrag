@@ -85,7 +85,11 @@ def setup_project(
     )
     
     # Run indexing
-    asyncio.run(index_cli(
+    # Ensure an event loop is created and set as the current event loop
+    # loop = asyncio.new_event_loop()
+    # asyncio.set_event_loop(loop)
+    
+    index_cli(
         root_dir=project_dir,
         verbose=True,
         resume=None,
@@ -96,7 +100,7 @@ def setup_project(
         dry_run=False,
         skip_validation=False,
         output_dir=None
-    ))
+    )
     
     # # Load into Neo4j
     # load_cli(
