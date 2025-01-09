@@ -88,7 +88,7 @@ def setup_project(
         )
     )
     
-    try:
+    try: # add try-except block or finally . AI!
         # Run indexing
         index_cli(
             root_dir=project_dir,
