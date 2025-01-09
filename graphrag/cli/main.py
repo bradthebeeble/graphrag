@@ -510,23 +510,23 @@ def _query_cli(
 def _new_cli(
     project_name: Annotated[
         str,
-        typer.Option(help="Name of the project"),
+        typer.Option(help="Name of the project", show_default=True),
     ],
     index_name: Annotated[
         str,
-        typer.Option(help="Name of the index"),
+        typer.Option(help="Name of the index", show_default=True),
     ],
     rss_url: Annotated[
         str,
-        typer.Option(help="URL of the RSS feed"),
+        typer.Option(help="URL of the RSS feed", show_default=True),
     ],
     dom_element: Annotated[
         str,
-        typer.Option(help="DOM element for scraping"),
+        typer.Option(help="DOM element for scraping", show_default=True),
     ] = "<HTML>",
     max_links: Annotated[
         int,
-        typer.Option(help="Maximum number of links to fetch"),
+        typer.Option(help="Maximum number of links to fetch", show_default=True),
     ] = 10,
     env: Annotated[
         Path | None,
@@ -539,7 +539,7 @@ def _new_cli(
     ] = None,
     domain: Annotated[
         str | None,
-        typer.Option(help="Domain name for prompt tuning"),
+        typer.Option(help="Domain name for prompt tuning", show_default=True),
     ] = None,
 ):
     """Create a new project from RSS feed."""
@@ -584,7 +584,8 @@ def _generate_cli(
     history: Annotated[
         list[str],
         typer.Option(
-            help="History of past questions from the user"
+            help="History of past questions from the user",
+            show_default=True
         ),
     ] = [],
     config: Annotated[
