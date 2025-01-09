@@ -11,7 +11,7 @@ from graphrag.prompt_tune.types import DocSelectionType
 from graphrag.logger.types import LoggerType
 from graphrag.cli.rss_fetcher import fetch_rss_documents
 
-async def setup_project(
+def setup_project(
     root_dir: Path,
     project_name: str,
     index_name: str,
@@ -45,8 +45,8 @@ async def setup_project(
         project_dir.mkdir(parents=True)
         input_dir.mkdir(parents=True)
     
-    # Fetch RSS content
-    await fetch_rss_documents(
+    # Fetch RSS content. Make it async call. AI!
+    fetch_rss_documents(
         rss_url=rss_url,
         max_links=max_links,
         dom_element=dom_element,
