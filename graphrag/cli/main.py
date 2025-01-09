@@ -506,9 +506,20 @@ def _query_cli(
         case _:
             raise ValueError(INVALID_METHOD_ERROR)
 
-# add a root cli param, which indicate the root directory of the project. Defaults to the current directory. AI!
 @app.command("new")
 def _new_cli(
+    root: Annotated[
+        Path,
+        typer.Option(
+            help="The project root directory.",
+            dir_okay=True,
+            writable=True,
+            resolve_path=True,
+            autocompletion=path_autocomplete(
+                file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
+            ),
+        ),
+    ] = Path(),  # set default to current directory
     project_name: Annotated[
         str | None,
         typer.Option(help="Name of the project", show_default=True),
