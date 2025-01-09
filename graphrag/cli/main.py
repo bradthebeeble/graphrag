@@ -556,7 +556,7 @@ def _new_cli(
 ):
     """Create a new project from RSS feed."""
     import asyncio
-    from graphrag.cli.rss_fetcher import setup_project
+    from graphrag.cli.new import setup_project
     
     # Interactive prompts for missing required parameters
     if project_name is None:
