@@ -394,6 +394,7 @@ def _prompt_tune_cli(
 def _query_cli(
     method: Annotated[SearchType, typer.Option(help="The query algorithm to use.")],
     query: Annotated[str, typer.Option(help="The query to execute.")],
+    debug: Annotated[bool, typer.Option(help="Enable debug logging")] = False,
     config: Annotated[
         Path | None,
         typer.Option(
@@ -452,6 +453,9 @@ def _query_cli(
         bool, typer.Option(help="Print response in a streaming manner.")
     ] = False,
 ):
+    if debug:
+        import logging
+        logging.basicConfig(level=logging.DEBUG)
     """Query a knowledge graph index."""
     from graphrag.cli.query import (
         run_basic_search,
