@@ -506,7 +506,6 @@ def _query_cli(
         case _:
             raise ValueError(INVALID_METHOD_ERROR)
 
-# fix errors. AI!
 @app.command("new")
 def _new_cli(
     root: Annotated[
@@ -585,8 +584,8 @@ def _new_cli(
         typer.echo("Error: Missing required parameters")
         return
     
-    # Construct full env file path
-    env_file_path = env / ".env" if env != Path() else None
+    # Use the env file path directly since it's already validated
+    env_file_path = env
     
     project_dir = asyncio.run(
         setup_project(
