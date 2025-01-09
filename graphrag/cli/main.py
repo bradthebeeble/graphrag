@@ -518,8 +518,10 @@ def _new_cli(
             autocompletion=path_autocomplete(
                 file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
             ),
+            prompt=True,
+            required=True,
         ),
-    ] = Path(),  # set default to current directory
+    ],
     project_name: Annotated[
         str | None,
         typer.Option(help="Name of the project", show_default=True),
@@ -547,8 +549,10 @@ def _new_cli(
             exists=True,
             file_okay=True,
             readable=True,
+            prompt=True,
+            required=True,
         ),
-    ] = Path(),
+    ],
     domain: Annotated[
         str | None,
         typer.Option(help="Domain name for prompt tuning", show_default=True),
@@ -576,9 +580,6 @@ def _new_cli(
     
     domain = typer.prompt("Enter domain name", default=domain)
     
-    if not env.exists():
-        typer.echo(f"Warning: Environment file {env} does not exist")
-        return
     if not project_name or not index_name or not rss_url:
         typer.echo("Error: Missing required parameters")
         return
