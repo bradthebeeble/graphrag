@@ -275,7 +275,7 @@ def _load_cli(
     """Build a knowledge graph index."""
     from graphrag.cli.load import load_cli
 
-    load_cli(
+    laoded = load_cli(
         root_dir=root,
         verbose=verbose,
         logger=LoggerType(logger),
@@ -515,13 +515,11 @@ def _new_cli(
             dir_okay=True,
             writable=True,
             resolve_path=True,
-            callback=path_autocomplete(
+            autocompletion=path_autocomplete(
                 file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
             ),
-            prompt=True,
-            required=True,
         ),
-    ],
+    ] , 
     env: Annotated[
         Path,
         typer.Option(
@@ -529,34 +527,36 @@ def _new_cli(
             exists=True,
             file_okay=True,
             readable=True,
-            prompt=True,
-            required=True,
         ),
     ],
     project_name: Annotated[
         str | None,
         typer.Option(help="Name of the project", show_default=True),
-    ] = None,
+    ],
     index_name: Annotated[
         str | None,
         typer.Option(help="Name of the index", show_default=True),
-    ] = None,
+    ],
     rss_url: Annotated[
         str | None,
         typer.Option(help="URL of the RSS feed", show_default=True),
-    ] = None,
+    ],
     dom_element: Annotated[
         str,
         typer.Option(help="DOM element for scraping", show_default=True),
-    ] = "<HTML>",
+    ],
     max_links: Annotated[
         int,
         typer.Option(help="Maximum number of links to fetch", show_default=True),
-    ] = 10,
+    ],
+    start: Annotated[
+        int,
+        typer.Option(help="Starting index for fetching links", show_default=True),
+    ],
     domain: Annotated[
         str | None,
         typer.Option(help="Domain name for prompt tuning", show_default=True),
-    ] = None,
+    ],
 ):
     """Create a new project from RSS feed."""
     import asyncio
@@ -571,35 +571,50 @@ def _new_cli(
     
     if rss_url is None:
         rss_url = typer.prompt("Enter RSS feed URL")
-    
-    # Optional parameters with interactive prompts
-    if typer.confirm("Do you want to specify a DOM element for scraping?", default=False):
+
+    if dom_element is None:
         dom_element = typer.prompt("Enter DOM element", default="<HTML>")
     
-    max_links = typer.prompt("Enter maximum links to fetch", default=max_links, type=int)
+    if max_links is None:
+        max_links = typer.prompt("Enter maximum links to fetch", default=10, type=int)
     
-    domain = typer.prompt("Enter domain name", default=domain)
+    if start is None:
+        start = typer.prompt("Enter index to start from", default=0, type=int)
+
+    if domain is None:
+        domain = typer.prompt("Enter domain name", default="")
     
+    if not env.exists():
+        typer.echo(f"Warning: Environment file {env} does not exist")
+        return
     if not project_name or not index_name or not rss_url:
         typer.echo("Error: Missing required parameters")
         return
     
-    # Use the env file path directly since it's already validated
-    env_file_path = env
-    
-    project_dir = asyncio.run(
-        setup_project(
+    # Construct full env file path
+    env_file_path = env / ".env"
+
+      # Create and set the event loop at the start
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    # Fix AI!
+    loop.run_until_complete(
+        project_dir = setup_project(
             root_dir=root,
             project_name=project_name,
             index_name=index_name,
             rss_url=rss_url,
             dom_element=dom_element,
             max_links=max_links,
-            env_file=env,
+            start=start,
+            env_file=env_file_path,
             domain=domain
         )
     )
     print(f"Project created at: {project_dir}")
+    # from graphrag.cli.initialize import initialize_project_at
+
+    # initialize_project_at(project_dir)
 
 @app.command("init")
 def _initialize_cli(
