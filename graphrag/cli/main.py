@@ -541,14 +541,14 @@ def _new_cli(
         typer.Option(help="Maximum number of links to fetch", show_default=True),
     ] = 10,
     env: Annotated[
-        Path | None,
+        Path,
         typer.Option(
             help="Path to .env file",
             exists=True,
             file_okay=True,
             readable=True,
         ),
-    ] = None,
+    ] = Path(),
     domain: Annotated[
         str | None,
         typer.Option(help="Domain name for prompt tuning", show_default=True),
@@ -576,18 +576,16 @@ def _new_cli(
     
     domain = typer.prompt("Enter domain name", default=domain)
     
-    if typer.confirm("Do you want to specify an environment file?", default=False):
-        env_path = typer.prompt("Enter path to .env file")
-        env = Path(env_path)
-        if not env.exists():
-            typer.echo(f"Warning: Environment file {env_path} does not exist")
-            env = None
+    if not env.exists():
+        typer.echo(f"Warning: Environment file {env} does not exist")
+        return
     if not project_name or not index_name or not rss_url:
         typer.echo("Error: Missing required parameters")
         return
-    
+    # env file should be concat of env (folder path)  and .env. AI!
     project_dir = asyncio.run(
         setup_project(
+            root_dir=root,
             project_name=project_name,
             index_name=index_name,
             rss_url=rss_url,
