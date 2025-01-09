@@ -506,6 +506,7 @@ def _query_cli(
         case _:
             raise ValueError(INVALID_METHOD_ERROR)
 
+# add a root cli param, which indicate the root directory of the project. Defaults to the current directory. AI!
 @app.command("new")
 def _new_cli(
     project_name: Annotated[
@@ -560,11 +561,9 @@ def _new_cli(
     if typer.confirm("Do you want to specify a DOM element for scraping?", default=False):
         dom_element = typer.prompt("Enter DOM element", default="<HTML>")
     
-    if typer.confirm("Do you want to specify maximum links to fetch?", default=False):
-        max_links = typer.prompt("Enter maximum links to fetch", default=10, type=int)
+    max_links = typer.prompt("Enter maximum links to fetch", default=max_links, type=int)
     
-    if typer.confirm("Do you want to specify a domain for prompt tuning?", default=False):
-        domain = typer.prompt("Enter domain name", default="")
+    domain = typer.prompt("Enter domain name", default=domain)
     
     if typer.confirm("Do you want to specify an environment file?", default=False):
         env_path = typer.prompt("Enter path to .env file")
@@ -572,6 +571,9 @@ def _new_cli(
         if not env.exists():
             typer.echo(f"Warning: Environment file {env_path} does not exist")
             env = None
+    if not project_name or not index_name or not rss_url:
+        typer.echo("Error: Missing required parameters")
+        return
     
     project_dir = asyncio.run(
         setup_project(
