@@ -88,7 +88,7 @@ def setup_project(
         )
     )
     
-    try: # add try-except block or finally . AI!
+    try:
         # Run indexing
         index_cli(
             root_dir=project_dir,
@@ -112,5 +112,8 @@ def setup_project(
             output_dir=None,
             load_communities=False
         )
-    
-    return project_dir
+        
+        return project_dir
+    finally:
+        # Clean up the event loop
+        loop.close()
