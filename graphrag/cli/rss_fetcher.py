@@ -39,6 +39,7 @@ async def fetch_rss_documents(
                     content = "\n".join(elem.get_text() for elem in elements)
                 
                 # Save to file
+                # use as file name, the last element of the url. AI!
                 output_file = output_dir / f"doc_{i+1}.txt"
                 with open(output_file, "w", encoding="utf-8") as f:
                     f.write(content)
