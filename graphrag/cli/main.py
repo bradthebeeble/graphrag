@@ -102,7 +102,7 @@ def _index_cli(
     config: Annotated[
         Path | None,
         typer.Option(
-            help="The configuration to use.", exists=True, file_okay=True, readable=True
+            help="The configuration to use.", exists=True, file_okay=True, readable=True, show_default=True
         ),
     ] = None,
     root: Annotated[
@@ -133,20 +133,20 @@ def _index_cli(
     dry_run: Annotated[
         bool,
         typer.Option(
-            help="Run the indexing pipeline without executing any steps to inspect and validate the configuration."
+            help="Run the indexing pipeline without executing any steps to inspect and validate the configuration.", show_default=True
         ),
     ] = False,
     cache: Annotated[bool, typer.Option(help="Use LLM cache.")] = True,
     skip_validation: Annotated[
         bool,
         typer.Option(
-            help="Skip any preflight validation. Useful when running no LLM steps."
+            help="Skip any preflight validation. Useful when running no LLM steps.", show_default=True
         ),
     ] = False,
     output: Annotated[
         Path | None,
         typer.Option(
-            help="Indexing pipeline output directory. Overrides storage.base_dir in the configuration file.",
+            help="Indexing pipeline output directory. Overrides storage.base_dir in the configuration file.", show_default=True,
             dir_okay=True,
             writable=True,
             resolve_path=True,
@@ -314,7 +314,7 @@ def _prompt_tune_cli(
     domain: Annotated[
         str | None,
         typer.Option(
-            help="The domain your input data is related to. For example 'space science', 'microbiology', 'environmental news'. If not defined, a domain will be inferred from the input data."
+            help="The domain your input data is related to. For example 'space science', 'microbiology', 'environmental news'. If not defined, a domain will be inferred from the input data.", show_default=True
         ),
     ] = None,
     selection_method: Annotated[
@@ -323,19 +323,19 @@ def _prompt_tune_cli(
     n_subset_max: Annotated[
         int,
         typer.Option(
-            help="The number of text chunks to embed when --selection-method=auto."
+            help="The number of text chunks to embed when --selection-method=auto.", show_default=True
         ),
     ] = N_SUBSET_MAX,
     k: Annotated[
         int,
         typer.Option(
-            help="The maximum number of documents to select from each centroid when --selection-method=auto."
+            help="The maximum number of documents to select from each centroid when --selection-method=auto.", show_default=True
         ),
     ] = K,
     limit: Annotated[
         int,
         typer.Option(
-            help="The number of documents to load when --selection-method={random,top}."
+            help="The number of documents to load when --selection-method={random,top}.", show_default=True
         ),
     ] = 15,
     max_tokens: Annotated[
@@ -344,7 +344,7 @@ def _prompt_tune_cli(
     min_examples_required: Annotated[
         int,
         typer.Option(
-            help="The minimum number of examples to generate/include in the entity extraction prompt."
+            help="The minimum number of examples to generate/include in the entity extraction prompt.", show_default=True
         ),
     ] = 2,
     chunk_size: Annotated[
@@ -353,7 +353,7 @@ def _prompt_tune_cli(
     language: Annotated[
         str | None,
         typer.Option(
-            help="The primary language used for inputs and outputs in graphrag prompts."
+            help="The primary language used for inputs and outputs in graphrag prompts.", show_default=True
         ),
     ] = None,
     discover_entity_types: Annotated[
@@ -362,7 +362,7 @@ def _prompt_tune_cli(
     output: Annotated[
         Path,
         typer.Option(
-            help="The directory to save prompts to, relative to the project root directory.",
+            help="The directory to save prompts to, relative to the project root directory.", show_default=True,
             dir_okay=True,
             writable=True,
             resolve_path=True,
@@ -439,7 +439,7 @@ def _query_cli(
     community_level: Annotated[
         int,
         typer.Option(
-            help="The community level in the Leiden community hierarchy from which to load community reports. Higher values represent reports from smaller communities."
+            help="The community level in the Leiden community hierarchy from which to load community reports. Higher values represent reports from smaller communities.", show_default=True
         ),
     ] = 2,
     dynamic_community_selection: Annotated[
@@ -449,7 +449,7 @@ def _query_cli(
     response_type: Annotated[
         str,
         typer.Option(
-            help="Free form text describing the response type and format, can be anything, e.g. Multiple Paragraphs, Single Paragraph, Single Sentence, List of 3-7 Points, Single Page, Multi-Page Report. Default: Multiple Paragraphs"
+            help="Free form text describing the response type and format, can be anything, e.g. Multiple Paragraphs, Single Paragraph, Single Sentence, List of 3-7 Points, Single Page, Multi-Page Report. Default: Multiple Paragraphs", show_default=True
         ),
     ] = "Multiple Paragraphs",
     streaming: Annotated[
