@@ -1,5 +1,6 @@
 """Project setup functionality."""
 
+import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -36,9 +37,11 @@ def setup_project(
         Path to the project directory
     """
     # Create project directory
+    is_project_exist = False
     project_dir = root_dir / f"{project_name}-{index_name}"
     input_dir = project_dir / "input"
     if project_dir.exists():
+        is_project_exist = True
         if not input_dir.exists():
             input_dir.mkdir(parents=True)
     else:
@@ -46,39 +49,43 @@ def setup_project(
         input_dir.mkdir(parents=True)
     
     # Fetch RSS content
-    asyncio.run(fetch_rss_documents(
+    fetch_rss_documents(
         rss_url=rss_url,
         max_links=max_links,
         dom_element=dom_element,
         output_dir=input_dir
-    ))
+    )
     
-    # Initialize projectno
-    initialize_project_at(project_dir)
+    # # Initialize projectno
+    if not is_project_exist:
+        initialize_project_at(project_dir)
     
     # Copy .env if provided
     if env_file:
         import shutil
         shutil.copy2(env_file, project_dir / ".env")
     
-    # Run prompt tuning
-    await prompt_tune(
-        root=project_dir,
-        config=None,
-        domain=domain,
-        selection_method=DocSelectionType.RANDOM,
-        limit=15,
-        max_tokens=1000,
-        chunk_size=500,
-        language=None,
-        discover_entity_types=True,
-        output=project_dir / "prompts",
-        n_subset_max=100,
-        k=5,
-        min_examples_required=2
+    # # Run prompt tuning
+    asyncio.run(
+        prompt_tune(
+            root=project_dir,
+            config=None,
+            domain=domain,
+            selection_method=DocSelectionType.RANDOM,
+            limit=15,
+            max_tokens=1000,
+            chunk_size=500,
+            language=None,
+            discover_entity_types=True,
+            output=project_dir / "prompts",
+            n_subset_max=100,
+            k=5,
+            min_examples_required=2
+        )
     )
     
-    # Run indexing
+    # # Run indexing.
+    # I get an error when running this: There is no current event loop in thread %r.'  . AI!
     index_cli(
         root_dir=project_dir,
         verbose=True,
@@ -92,14 +99,14 @@ def setup_project(
         output_dir=None
     )
     
-    # Load into Neo4j
-    load_cli(
-        root_dir=project_dir,
-        verbose=True,
-        logger=LoggerType.RICH,
-        config_filepath=None,
-        output_dir=None,
-        load_communities=False
-    )
+    # # Load into Neo4j
+    # load_cli(
+    #     root_dir=project_dir,
+    #     verbose=True,
+    #     logger=LoggerType.RICH,
+    #     config_filepath=None,
+    #     output_dir=None,
+    #     load_communities=False
+    # )
     
     return project_dir
