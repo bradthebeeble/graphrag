@@ -506,6 +506,59 @@ def _query_cli(
         case _:
             raise ValueError(INVALID_METHOD_ERROR)
 
+@app.command("new")
+def _new_cli(
+    project_name: Annotated[
+        str,
+        typer.Option(help="Name of the project"),
+    ],
+    index_name: Annotated[
+        str,
+        typer.Option(help="Name of the index"),
+    ],
+    rss_url: Annotated[
+        str,
+        typer.Option(help="URL of the RSS feed"),
+    ],
+    dom_element: Annotated[
+        str,
+        typer.Option(help="DOM element for scraping"),
+    ] = "<HTML>",
+    max_links: Annotated[
+        int,
+        typer.Option(help="Maximum number of links to fetch"),
+    ] = 10,
+    env: Annotated[
+        Path | None,
+        typer.Option(
+            help="Path to .env file",
+            exists=True,
+            file_okay=True,
+            readable=True,
+        ),
+    ] = None,
+    domain: Annotated[
+        str | None,
+        typer.Option(help="Domain name for prompt tuning"),
+    ] = None,
+):
+    """Create a new project from RSS feed."""
+    import asyncio
+    from graphrag.cli.rss_fetcher import setup_project
+    
+    project_dir = asyncio.run(
+        setup_project(
+            project_name=project_name,
+            index_name=index_name,
+            rss_url=rss_url,
+            dom_element=dom_element,
+            max_links=max_links,
+            env_file=env,
+            domain=domain
+        )
+    )
+    print(f"Project created at: {project_dir}")
+
 @app.command("init")
 def _initialize_cli(
     root: Annotated[
