@@ -597,9 +597,9 @@ def _new_cli(
       # Create and set the event loop at the start
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    # Fix AI!
-    loop.run_until_complete(
-        project_dir = setup_project(
+    
+    project_dir = loop.run_until_complete(
+        setup_project(
             root_dir=root,
             project_name=project_name,
             index_name=index_name,
