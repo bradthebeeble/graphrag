@@ -506,6 +506,7 @@ def _query_cli(
         case _:
             raise ValueError(INVALID_METHOD_ERROR)
 
+# fix errors. AI!
 @app.command("new")
 def _new_cli(
     root: Annotated[
@@ -518,6 +519,17 @@ def _new_cli(
             autocompletion=path_autocomplete(
                 file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
             ),
+            prompt=True,
+            required=True,
+        ),
+    ],
+    env: Annotated[
+        Path,
+        typer.Option(
+            help="Path to .env file",
+            exists=True,
+            file_okay=True,
+            readable=True,
             prompt=True,
             required=True,
         ),
@@ -542,17 +554,6 @@ def _new_cli(
         int,
         typer.Option(help="Maximum number of links to fetch", show_default=True),
     ] = 10,
-    env: Annotated[
-        Path,
-        typer.Option(
-            help="Path to .env file",
-            exists=True,
-            file_okay=True,
-            readable=True,
-            prompt=True,
-            required=True,
-        ),
-    ],
     domain: Annotated[
         str | None,
         typer.Option(help="Domain name for prompt tuning", show_default=True),
