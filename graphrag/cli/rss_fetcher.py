@@ -75,6 +75,7 @@ async def setup_project(
     from graphrag.prompt_tune.types import DocSelectionType
     
     # Create project directory
+    # if dir exists, and input dir doesn't , create just input, If both exist, skip. If none exist, create both. AI!
     project_dir = Path(f"{project_name}-{index_name}")
     dir_existed = project_dir.exists()
     input_dir = project_dir / "input"
