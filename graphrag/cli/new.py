@@ -40,7 +40,6 @@ def setup_project(
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     
-    try:
     # Create project directory
     is_project_exist = False
     project_dir = root_dir / f"{project_name}-{index_name}"
@@ -90,10 +89,7 @@ def setup_project(
     )
     
     # Run indexing
-    # Ensure an event loop is created and set as the current event loop
-    # loop = asyncio.new_event_loop()
-    # asyncio.set_event_loop(loop)
-    
+    # seems like after index_cli finishes, it doesn't continue to load_cli. Possoble bevasue of the asyncio loop? AI!
     index_cli(
         root_dir=project_dir,
         verbose=True,
@@ -108,16 +104,13 @@ def setup_project(
     )
     
     # # Load into Neo4j
-    # load_cli(
-    #     root_dir=project_dir,
-    #     verbose=True,
-    #     logger=LoggerType.RICH,
-    #     config_filepath=None,
-    #     output_dir=None,
-    #     load_communities=False
-    # )
+    load_cli(
+        root_dir=project_dir,
+        verbose=True,
+        logger=LoggerType.RICH,
+        config_filepath=None,
+        output_dir=None,
+        load_communities=False
+    )
     
-        return project_dir
-    finally:
-        # Clean up the event loop
-        loop.close()
+    return project_dir
