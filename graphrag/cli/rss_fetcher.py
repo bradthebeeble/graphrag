@@ -1,12 +1,13 @@
 """RSS fetching and document processing functionality."""
 
-import asyncio
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
 import shutil
 from typing import Optional
+
+from graphrag.logger.types import LoggerType
 
 async def fetch_rss_documents(
     rss_url: str,
@@ -46,6 +47,7 @@ async def fetch_rss_documents(
                 print(f"Error processing {entry.link}: {str(e)}")
 
 async def setup_project(
+    root_dir: Path,
     project_name: str,
     index_name: str,
     rss_url: str,
@@ -77,7 +79,7 @@ async def setup_project(
     # Create project directory
     project_dir = Path(f"{project_name}-{index_name}")
     input_dir = project_dir / "input"
-    
+    # all mkdir operations should respect the root param. AI!
     if project_dir.exists():
         if not input_dir.exists():
             input_dir.mkdir()
@@ -124,7 +126,7 @@ async def setup_project(
         resume=None,
         memprofile=False,
         cache=True,
-        logger="rich",
+        logger=LoggerType.RICH,
         config_filepath=None,
         dry_run=False,
         skip_validation=False,
@@ -135,7 +137,7 @@ async def setup_project(
     load_cli(
         root_dir=project_dir,
         verbose=True,
-        logger="rich",
+        logger=LoggerType.RICH,
         config_filepath=None,
         output_dir=None,
         load_communities=False
