@@ -77,15 +77,14 @@ async def setup_project(
     from graphrag.prompt_tune.types import DocSelectionType
     
     # Create project directory
-    project_dir = Path(f"{project_name}-{index_name}")
+    project_dir = root_dir / f"{project_name}-{index_name}"
     input_dir = project_dir / "input"
-    # all mkdir operations should respect the root param. AI!
     if project_dir.exists():
         if not input_dir.exists():
-            input_dir.mkdir()
+            input_dir.mkdir(parents=True)
     else:
-        project_dir.mkdir()
-        input_dir.mkdir()
+        project_dir.mkdir(parents=True)
+        input_dir.mkdir(parents=True)
     
     # Fetch RSS content
     await fetch_rss_documents(
