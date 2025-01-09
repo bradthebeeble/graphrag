@@ -36,6 +36,11 @@ def setup_project(
     Returns:
         Path to the project directory
     """
+    # Create and set the event loop at the start
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    try:
     # Create project directory
     is_project_exist = False
     project_dir = root_dir / f"{project_name}-{index_name}"
@@ -65,8 +70,8 @@ def setup_project(
         import shutil
         shutil.copy2(env_file, project_dir / ".env")
     
-    # # Run prompt tuning
-    asyncio.run(
+    # Run prompt tuning
+    loop.run_until_complete(
         prompt_tune(
             root=project_dir,
             config=None,
@@ -112,4 +117,7 @@ def setup_project(
     #     load_communities=False
     # )
     
-    return project_dir
+        return project_dir
+    finally:
+        # Clean up the event loop
+        loop.close()
