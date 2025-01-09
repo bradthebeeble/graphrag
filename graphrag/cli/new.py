@@ -84,7 +84,9 @@ def setup_project(
         )
     )
     
-    # Run indexing
+    # Run indexing.
+    # I got the error Argument of type "None" cannot be assigned to parameter "main" of type "Coroutine[Any, Any, _T@run]" in function "run"
+#   "None" is not assignable to "Coroutine[Any, Any, _T@run]"PylancereportArgumentType. AI!
     asyncio.run(index_cli(
         root_dir=project_dir,
         verbose=True,
