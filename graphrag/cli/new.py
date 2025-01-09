@@ -45,7 +45,7 @@ def setup_project(
         project_dir.mkdir(parents=True)
         input_dir.mkdir(parents=True)
     
-    # Fetch RSS content. Make it async call. AI!
+    # Fetch RSS content. Make async using asyncio.run(fetch_rss_documents(...)). AI!
     fetch_rss_documents(
         rss_url=rss_url,
         max_links=max_links,
@@ -53,7 +53,7 @@ def setup_project(
         output_dir=input_dir
     )
     
-    # Initialize project
+    # Initialize projectno
     initialize_project_at(project_dir)
     
     # Copy .env if provided
