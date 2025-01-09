@@ -94,7 +94,8 @@ def setup_project(
     try:
         print("Starting indexing operation...")
         # Run indexing
-        index_cli(
+        # Run indexing and check for errors
+        index_errors = index_cli(
             root_dir=project_dir,
             verbose=True,
             resume=None,
@@ -107,6 +108,10 @@ def setup_project(
             output_dir=None
         )
         
+        if index_errors:
+            print("Indexing failed, skipping Neo4j load")
+            return project_dir
+            
         print("Starting Neo4j loading operation...")
         # Load into Neo4j
         load_cli(
