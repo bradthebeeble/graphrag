@@ -46,7 +46,7 @@ from graphrag.prompt_tune.types import DocSelectionType
 
 
 @validate_call
-async def generate_indexing_prompts(
+def generate_indexing_prompts(
     config: GraphRagConfig,
     root: str,
     chunk_size: PositiveInt = MIN_CHUNK_SIZE,
