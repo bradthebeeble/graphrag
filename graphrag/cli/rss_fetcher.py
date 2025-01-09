@@ -6,8 +6,18 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import shutil
 from typing import Optional
+from urllib.parse import urlparse
+import re
 
 from graphrag.logger.types import LoggerType
+
+def get_safe_filename(url: str) -> str:
+    """Extract and clean the last part of URL to use as filename."""
+    path = urlparse(url).path
+    filename = path.rstrip('/').split('/')[-1] or 'index'
+    # Remove any non-alphanumeric chars except - and _
+    filename = re.sub(r'[^\w\-_]', '_', filename)
+    return filename
 
 async def fetch_rss_documents(
     rss_url: str,
@@ -38,9 +48,9 @@ async def fetch_rss_documents(
                     elements = soup.select(dom_element)
                     content = "\n".join(elem.get_text() for elem in elements)
                 
-                # Save to file
-                # use as file name, the last element of the url. AI!
-                output_file = output_dir / f"doc_{i+1}.txt"
+                # Save to file using URL's last segment as name
+                safe_name = get_safe_filename(entry.link)
+                output_file = output_dir / f"{safe_name}.txt"
                 with open(output_file, "w", encoding="utf-8") as f:
                     f.write(content)
                     
