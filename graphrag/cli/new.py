@@ -19,6 +19,7 @@ def setup_project(
     rss_url: str,
     dom_element: str = "<HTML>",
     max_links: int = 10,
+    start: int = 0,
     env_file: Optional[Path] = None,
     domain: Optional[str] = None
 ) -> Path:
@@ -56,6 +57,7 @@ def setup_project(
     fetch_rss_documents(
         rss_url=rss_url,
         max_links=max_links,
+        start=start,
         dom_element=dom_element,
         output_dir=input_dir
     )
@@ -70,23 +72,24 @@ def setup_project(
         shutil.copy2(env_file, project_dir / ".env")
     
     # Run prompt tuning
-    loop.run_until_complete(
-        prompt_tune(
-            root=project_dir,
-            config=None,
-            domain=domain,
-            selection_method=DocSelectionType.RANDOM,
-            limit=15,
-            max_tokens=1000,
-            chunk_size=500,
-            language=None,
-            discover_entity_types=True,
-            output=project_dir / "prompts",
-            n_subset_max=100,
-            k=5,
-            min_examples_required=2
+    if not is_project_exist:
+        loop.run_until_complete(
+            prompt_tune(
+                root=project_dir,
+                config=None,
+                domain=domain,
+                selection_method=DocSelectionType.RANDOM,
+                limit=15,
+                max_tokens=1000,
+                chunk_size=500,
+                language=None,
+                discover_entity_types=True,
+                output=project_dir / "prompts",
+                n_subset_max=100,
+                k=5,
+                min_examples_required=2
+            )
         )
-    )
     
     try:
         print("Starting indexing operation...")
