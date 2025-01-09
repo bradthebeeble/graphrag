@@ -515,7 +515,7 @@ def _new_cli(
             dir_okay=True,
             writable=True,
             resolve_path=True,
-            autocompletion=path_autocomplete(
+            callback=path_autocomplete(
                 file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
             ),
             prompt=True,
