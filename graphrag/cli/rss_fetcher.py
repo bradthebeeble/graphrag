@@ -31,8 +31,9 @@ def fetch_rss_documents(
         output_dir: Directory to save documents to
     """
     feed = feedparser.parse(rss_url)
-    # update loop to start from index <start>. AI!
-    for i, entry in enumerate(feed.entries[:max_links]):
+    # Slice entries from start index up to max_links
+    entries = feed.entries[start:start + max_links]
+    for i, entry in enumerate(entries):
         if hasattr(entry, 'link'):
             # Generate safe filename first
             safe_name = get_safe_filename(entry.link)
