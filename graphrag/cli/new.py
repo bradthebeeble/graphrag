@@ -84,9 +84,8 @@ def setup_project(
         )
     )
     
-    # # Run indexing.
-    # I get an error when running this: There is no current event loop in thread %r.'  . AI!
-    index_cli(
+    # Run indexing
+    asyncio.run(index_cli(
         root_dir=project_dir,
         verbose=True,
         resume=None,
@@ -97,7 +96,7 @@ def setup_project(
         dry_run=False,
         skip_validation=False,
         output_dir=None
-    )
+    ))
     
     # # Load into Neo4j
     # load_cli(
