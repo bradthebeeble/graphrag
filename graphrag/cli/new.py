@@ -89,6 +89,7 @@ def setup_project(
     )
     
     try:
+        print("Starting indexing operation...")
         # Run indexing
         index_cli(
             root_dir=project_dir,
@@ -103,6 +104,7 @@ def setup_project(
             output_dir=None
         )
         
+        print("Starting Neo4j loading operation...")
         # Load into Neo4j
         load_cli(
             root_dir=project_dir,
