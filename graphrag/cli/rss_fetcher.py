@@ -15,7 +15,7 @@ def get_safe_filename(url: str) -> str:
     filename = re.sub(r'[^\w\-_]', '_', filename)
     return filename
 
-async def fetch_rss_documents(
+def fetch_rss_documents(
     rss_url: str,
     max_links: int,
     dom_element: str,
@@ -30,7 +30,7 @@ async def fetch_rss_documents(
         output_dir: Directory to save documents to
     """
     feed = feedparser.parse(rss_url)
-    
+    # change the code to first check the safe file name; and only  fetch it if it doesn't already exwt in the folder. AI!
     for i, entry in enumerate(feed.entries[:max_links]):
         if hasattr(entry, 'link'):
             try:
