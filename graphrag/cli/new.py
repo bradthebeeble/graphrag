@@ -93,29 +93,33 @@ def setup_project(
     
     try:
         print("Starting indexing operation...")
-        # Run indexing
-        index_cli(
-            root_dir=project_dir,
-            verbose=True,
-            resume=None,
-            memprofile=False,
-            cache=True,
-            logger=LoggerType.RICH,
-            config_filepath=None,
-            dry_run=False,
-            skip_validation=False,
-            output_dir=None
+        # Run indexing as coroutine
+        loop.run_until_complete(
+            index_cli(
+                root_dir=project_dir,
+                verbose=True,
+                resume=None,
+                memprofile=False,
+                cache=True,
+                logger=LoggerType.RICH,
+                config_filepath=None,
+                dry_run=False,
+                skip_validation=False,
+                output_dir=None
+            )
         )
         
         print("Starting Neo4j loading operation...")
-        # Load into Neo4j
-        load_cli(
-            root_dir=project_dir,
-            verbose=True,
-            logger=LoggerType.RICH,
-            config_filepath=None,
-            output_dir=None,
-            load_communities=False
+        # Load into Neo4j as coroutine
+        loop.run_until_complete(
+            load_cli(
+                root_dir=project_dir,
+                verbose=True,
+                logger=LoggerType.RICH,
+                config_filepath=None,
+                output_dir=None,
+                load_communities=False
+            )
         )
         
         return project_dir
