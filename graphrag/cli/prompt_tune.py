@@ -3,6 +3,7 @@
 
 """CLI implementation of the prompt-tune subcommand."""
 
+import asyncio
 from pathlib import Path
 
 import graphrag.api as api
@@ -19,7 +20,7 @@ from graphrag.prompt_tune.generator.entity_summarization_prompt import (
 )
 
 
-async def prompt_tune(
+def prompt_tune(
     root: Path,
     config: Path | None,
     domain: str | None,
@@ -56,19 +57,21 @@ async def prompt_tune(
     root_path = Path(root).resolve()
     graph_config = load_config(root_path, config)
 
-    prompts = await api.generate_indexing_prompts(
-        config=graph_config,
-        root=str(root_path),
-        chunk_size=chunk_size,
-        limit=limit,
-        selection_method=selection_method,
-        domain=domain,
-        language=language,
-        max_tokens=max_tokens,
-        discover_entity_types=discover_entity_types,
-        min_examples_required=min_examples_required,
-        n_subset_max=n_subset_max,
-        k=k,
+    prompts = asyncio.run (
+        api.generate_indexing_prompts(
+            config=graph_config,
+            root=str(root_path),
+            chunk_size=chunk_size,
+            limit=limit,
+            selection_method=selection_method,
+            domain=domain,
+            language=language,
+            max_tokens=max_tokens,
+            discover_entity_types=discover_entity_types,
+            min_examples_required=min_examples_required,
+            n_subset_max=n_subset_max,
+            k=k,
+        )
     )
 
     output_path = output.resolve()

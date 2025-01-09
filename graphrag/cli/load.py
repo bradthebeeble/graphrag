@@ -136,4 +136,4 @@ def _run_load(
     else:
         success("Loading to graph db completed successfully.", True)
 
-    sys.exit(1 if encountered_errors else 0)
+    # sys.exit(1 if encountered_errors else 0)

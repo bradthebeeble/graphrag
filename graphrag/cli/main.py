@@ -370,27 +370,23 @@ def _prompt_tune_cli(
     ] = Path("prompts"),
 ):
     """Generate custom graphrag prompts with your own data (i.e. auto templating)."""
-    import asyncio
 
     from graphrag.cli.prompt_tune import prompt_tune
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(
-        prompt_tune(
-            root=root,
-            config=config,
-            domain=domain,
-            selection_method=selection_method,
-            limit=limit,
-            max_tokens=max_tokens,
-            chunk_size=chunk_size,
-            language=language,
-            discover_entity_types=discover_entity_types,
-            output=output,
-            n_subset_max=n_subset_max,
-            k=k,
-            min_examples_required=min_examples_required,
-        )
+    prompt_tune(
+        root=root,
+        config=config,
+        domain=domain,
+        selection_method=selection_method,
+        limit=limit,
+        max_tokens=max_tokens,
+        chunk_size=chunk_size,
+        language=language,
+        discover_entity_types=discover_entity_types,
+        output=output,
+        n_subset_max=n_subset_max,
+        k=k,
+        min_examples_required=min_examples_required,
     )
 
 
@@ -594,22 +590,16 @@ def _new_cli(
     # Construct full env file path
     env_file_path = env / ".env"
 
-      # Create and set the event loop at the start
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
-    project_dir = loop.run_until_complete(
-        setup_project(
-            root_dir=root,
-            project_name=project_name,
-            index_name=index_name,
-            rss_url=rss_url,
-            dom_element=dom_element,
-            max_links=max_links,
-            start=start,
-            env_file=env_file_path,
-            domain=domain
-        )
+    project_dir = setup_project(
+        root_dir=root,
+        project_name=project_name,
+        index_name=index_name,
+        rss_url=rss_url,
+        dom_element=dom_element,
+        max_links=max_links,
+        start=start,
+        env_file=env_file_path,
+        domain=domain
     )
     print(f"Project created at: {project_dir}")
     # from graphrag.cli.initialize import initialize_project_at

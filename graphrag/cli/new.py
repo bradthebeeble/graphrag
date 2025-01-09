@@ -37,9 +37,6 @@ def setup_project(
     Returns:
         Path to the project directory
     """
-    # Create and set the event loop at the start
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     
     # Create project directory
     is_project_exist = False
@@ -54,6 +51,7 @@ def setup_project(
         input_dir.mkdir(parents=True)
     
     # Fetch RSS content
+    print("Fetching documents...")
     fetch_rss_documents(
         rss_url=rss_url,
         max_links=max_links,
@@ -64,66 +62,62 @@ def setup_project(
     
     # # Initialize projectno
     if not is_project_exist:
+        print("Initializing project...")
         initialize_project_at(project_dir)
     
     # Copy .env if provided
     if env_file:
         import shutil
+        print("Copying .env file...")
         shutil.copy2(env_file, project_dir / ".env")
     
     # Run prompt tuning
     if not is_project_exist:
-        loop.run_until_complete(
-            prompt_tune(
-                root=project_dir,
-                config=None,
-                domain=domain,
-                selection_method=DocSelectionType.RANDOM,
-                limit=15,
-                max_tokens=1000,
-                chunk_size=500,
-                language=None,
-                discover_entity_types=True,
-                output=project_dir / "prompts",
-                n_subset_max=100,
-                k=5,
-                min_examples_required=2
-            )
+        print("Starting prompt tuning operation...")
+        prompt_tune(
+            root=project_dir,
+            config=None,
+            domain=domain,
+            selection_method=DocSelectionType.RANDOM,
+            limit=15,
+            max_tokens=1000,
+            chunk_size=500,
+            language=None,
+            discover_entity_types=True,
+            output=project_dir / "prompts",
+            n_subset_max=100,
+            k=5,
+            min_examples_required=2
         )
     
-    try:
-        print("Starting indexing operation...")
-        # Run indexing
-        # Run indexing and check for errors
-        index_errors = index_cli(
-            root_dir=project_dir,
-            verbose=True,
-            resume=None,
-            memprofile=False,
-            cache=True,
-            logger=LoggerType.RICH,
-            config_filepath=None,
-            dry_run=False,
-            skip_validation=False,
-            output_dir=None
-        )
-        
-        if index_errors:
-            print("Indexing failed, skipping Neo4j load")
-            return project_dir
-            
-        print("Starting Neo4j loading operation...")
-        # Load into Neo4j
-        load_cli(
-            root_dir=project_dir,
-            verbose=True,
-            logger=LoggerType.RICH,
-            config_filepath=None,
-            output_dir=None,
-            load_communities=False
-        )
-        
+    print("Starting indexing operation...")
+    # Run indexing
+    index_errors = index_cli(
+        root_dir=project_dir,
+        verbose=True,
+        resume=None,
+        memprofile=False,
+        cache=True,
+        logger=LoggerType.PRINT,
+        config_filepath=None,
+        dry_run=False,
+        skip_validation=False,
+        output_dir=None
+    )
+    
+    if index_errors:
+        print("Indexing failed, skipping Neo4j load")
         return project_dir
-    finally:
-        # Clean up the event loop
-        loop.close()
+            
+    print("Starting Neo4j loading operation...")
+    # Load into Neo4j
+    loaded = load_cli(
+        root_dir=project_dir,
+        verbose=True,
+        logger=LoggerType.PRINT,
+        config_filepath=None,
+        output_dir=None,
+        load_communities=False
+    )
+    return project_dir
+        
