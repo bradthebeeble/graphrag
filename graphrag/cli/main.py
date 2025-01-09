@@ -509,17 +509,17 @@ def _query_cli(
 @app.command("new")
 def _new_cli(
     project_name: Annotated[
-        str,
+        str | None,
         typer.Option(help="Name of the project", show_default=True),
-    ],
+    ] = None,
     index_name: Annotated[
-        str,
+        str | None,
         typer.Option(help="Name of the index", show_default=True),
-    ],
+    ] = None,
     rss_url: Annotated[
-        str,
+        str | None,
         typer.Option(help="URL of the RSS feed", show_default=True),
-    ],
+    ] = None,
     dom_element: Annotated[
         str,
         typer.Option(help="DOM element for scraping", show_default=True),
@@ -545,6 +545,33 @@ def _new_cli(
     """Create a new project from RSS feed."""
     import asyncio
     from graphrag.cli.rss_fetcher import setup_project
+    
+    # Interactive prompts for missing required parameters
+    if project_name is None:
+        project_name = typer.prompt("Enter project name")
+    
+    if index_name is None:
+        index_name = typer.prompt("Enter index name")
+    
+    if rss_url is None:
+        rss_url = typer.prompt("Enter RSS feed URL")
+    
+    # Optional parameters with interactive prompts
+    if typer.confirm("Do you want to specify a DOM element for scraping?", default=False):
+        dom_element = typer.prompt("Enter DOM element", default="<HTML>")
+    
+    if typer.confirm("Do you want to specify maximum links to fetch?", default=False):
+        max_links = typer.prompt("Enter maximum links to fetch", default=10, type=int)
+    
+    if typer.confirm("Do you want to specify a domain for prompt tuning?", default=False):
+        domain = typer.prompt("Enter domain name", default="")
+    
+    if typer.confirm("Do you want to specify an environment file?", default=False):
+        env_path = typer.prompt("Enter path to .env file")
+        env = Path(env_path)
+        if not env.exists():
+            typer.echo(f"Warning: Environment file {env_path} does not exist")
+            env = None
     
     project_dir = asyncio.run(
         setup_project(
