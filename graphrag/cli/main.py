@@ -582,7 +582,10 @@ def _new_cli(
     if not project_name or not index_name or not rss_url:
         typer.echo("Error: Missing required parameters")
         return
-    # env file should be concat of env (folder path)  and .env. AI!
+    
+    # Construct full env file path
+    env_file_path = env / ".env" if env != Path() else None
+    
     project_dir = asyncio.run(
         setup_project(
             root_dir=root,
