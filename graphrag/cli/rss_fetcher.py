@@ -30,9 +30,17 @@ def fetch_rss_documents(
         output_dir: Directory to save documents to
     """
     feed = feedparser.parse(rss_url)
-    # change the code to first check the safe file name; and only  fetch it if it doesn't already exwt in the folder. AI!
     for i, entry in enumerate(feed.entries[:max_links]):
         if hasattr(entry, 'link'):
+            # Generate safe filename first
+            safe_name = get_safe_filename(entry.link)
+            output_file = output_dir / f"{safe_name}.txt"
+            
+            # Skip if file already exists
+            if output_file.exists():
+                print(f"Skipping {entry.link} - file already exists")
+                continue
+                
             try:
                 response = requests.get(entry.link)
                 soup = BeautifulSoup(response.text, 'html.parser')
