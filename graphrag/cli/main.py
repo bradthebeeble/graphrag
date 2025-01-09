@@ -456,6 +456,10 @@ def _query_cli(
     if debug:
         import logging
         logging.basicConfig(level=logging.DEBUG)
+        breakpoint()
+    if debug:
+        import logging
+        logging.basicConfig(level=logging.DEBUG)
     """Query a knowledge graph index."""
     from graphrag.cli.query import (
         run_basic_search,
