@@ -166,7 +166,7 @@ def load_data(
                     WITH DISTINCT value, collect(DISTINCT r) as rels, 
                          collect(DISTINCT start) as starts, 
                          collect(DISTINCT end) as ends
-                    MERGE (c:__Community__ {community: value.id})
+                    MERGE (c:__Community__ {community: value.community})
                     ON CREATE SET c += value {.level, .title}
                     ON MATCH SET c += value {.level, .title}
                     WITH c, starts, ends

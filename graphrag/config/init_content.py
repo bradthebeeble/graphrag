@@ -87,6 +87,7 @@ skip_workflows: []
 entity_extraction:
   prompt: "prompts/entity_extraction.txt"
   entity_types: [{",".join(defs.ENTITY_EXTRACTION_ENTITY_TYPES)}]
+  relationship_types: [{",".join(defs.ENTITY_EXTRACTION_RELATIONSHIP_TYPES)}]
   max_gleanings: {defs.ENTITY_EXTRACTION_MAX_GLEANINGS}
 
 summarize_descriptions:

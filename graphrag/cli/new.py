@@ -117,7 +117,7 @@ def setup_project(
         logger=LoggerType.PRINT,
         config_filepath=None,
         output_dir=None,
-        load_communities=False
+        load_communities=True
     )
     return project_dir
         

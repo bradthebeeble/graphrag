@@ -1,7 +1,20 @@
 {
 	"_comment": "Use this file to configure the graphrag project for debugging. You may create other configuration profiles based on these or select one below to use.",
 	"version": "0.2.0",
+	"env": {
+        "PATH": "/Users/asafatzmon/dev/graphrag/.venv/bin:${env:PATH}"
+    },
 	"configurations": [
+		{
+			"name": "Initializer",
+			"type": "debugpy",
+			"request": "launch",
+			"module": "poetry",
+			"args": [
+				"poe", "init",
+				"--root", "../500songs-batch1/"
+			],
+		},
 		{
 			"name": "Indexer",
 			"type": "debugpy",
@@ -9,7 +22,17 @@
 			"module": "poetry",
 			"args": [
 				"poe", "index",
-				"--root", "<path_to_ragtest_root_demo>"
+				"--root", "../500songs-batch1/"
+			],
+		},
+		{
+			"name": "Loader",
+			"type": "debugpy",
+			"request": "launch",
+			"module": "poetry",
+			"args": [
+				"poe", "load",
+				"--root", "../500songs-batch1/"
 			],
 		},
 		{
@@ -19,9 +42,10 @@
 			"module": "poetry",
 			"args": [
 				"poe", "query",
-				"--root", "<path_to_ragtest_root_demo>",
-				"--method", "global",
-				"--query", "What are the top themes in this story",
+				"--root", "../500songs-batch1/",
+				"--method", "local",
+				"--query", "What is Paint it Black and what impact did it have?",
+				"--response-type", "two statements"
 			]
 		},
 		{
@@ -30,9 +54,12 @@
 			"request": "launch",
 			"module": "poetry",
 			"args": [
-				"poe", "prompt-tune",
+				"poe", "prompt_tune",
+				"--root", "../500songs-batch1/",
+				"--output", "../500songs-batch1/prompts/",
 				"--config",
-				"<path_to_ragtest_root_demo>/settings.yaml",
+				"../500songs-batch1/settings.yaml",
+				"--no-discover-entity-types"
 			]
 		}
 	]

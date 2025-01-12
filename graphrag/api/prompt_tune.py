@@ -121,8 +121,10 @@ async def generate_indexing_prompts(
     )
 
     entity_types = None
+    relationship_types = None
     if discover_entity_types:
         logger.info("Generating entity types...")
+        logger.info("Generating relationship types...")
         entity_types = await generate_entity_types(
             llm,
             domain=domain,
@@ -130,17 +132,20 @@ async def generate_indexing_prompts(
             docs=doc_list,
             json_mode=config.llm.model_supports_json or False,
         )
-        logger.info(f"Generated entity types: {entity_types}") 
-
-    logger.info("Generating relationship types...")
-    relationship_types = await generate_relationship_types(
-        llm,
-        domain=domain,
-        persona=persona,
-        entity_types=entity_types,
-        docs=doc_list,
-        json_mode=config.llm.model_supports_json or False,
-    )
+        relationship_types = await generate_relationship_types(
+            llm,
+            domain=domain,
+            persona=persona,
+            entity_types=entity_types,
+            docs=doc_list,
+            json_mode=config.llm.model_supports_json or False,
+        )
+    else:
+        entity_types = config.entity_extraction.entity_types
+        relationship_types = config.entity_extraction.relationship_types
+   
+    logger.info(f"Generated entity types: {entity_types}") 
+    
     logger.info(f"Generated relationship types: {relationship_types}") 
 
     logger.info("Generating entity relationship examples...")

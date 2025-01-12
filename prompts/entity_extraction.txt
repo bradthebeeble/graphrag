@@ -1,0 +1,108 @@
+
+-Goal-
+Given a text document that is potentially relevant to this activity and a list of entity types, identify all entities of those types from the text and all relationships among the identified entities.
+
+-Steps-
+1. Identify all entities. For each identified entity, extract the following information:
+- entity_name: Name of the entity, capitalized
+- entity_type: One of the following types: [album, artist, song, label, performance, genre]
+- entity_description: Comprehensive description of the entity's attributes and activities
+Format each entity as ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
+
+2. From the entities identified in step 1, identify all pairs of (source_entity, target_entity) that are *clearly related* to each other.
+For each pair of related entities, extract the following information:
+- source_entity: name of the source entity, as identified in step 1
+- target_entity: name of the target entity, as identified in step 1
+- relationship_type: One of the following types: [performed_by, released_by, genre_of, composed_by, produced_by, written_by]
+- relationship_description: explanation as to why you think the source entity and the target entity are related to each other
+- relationship_strength: an integer score between 1 to 10, indicating strength of the relationship between the source entity and target entity
+Format each relationship as ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_type>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_strength>)
+
+3. Return output in The primary language of the provided text is "English." as a single list of all the entities and relationships identified in steps 1 and 2. Use **{record_delimiter}** as the list delimiter.
+
+4. If you have to translate into The primary language of the provided text is "English.", just translate the descriptions, nothing else!
+
+5. When finished, output {completion_delimiter}.
+
+-Examples-
+######################
+
+Example 1:
+
+entity_types: [album, artist, song, label, performance, genre]
+relationship_types: [performed_by, released_by, genre_of, composed_by, produced_by, written_by]
+text:
+Excerpt: The Rolling Stones, “Have You Seen Your Mother Baby, Standing In the Shadow?”]
+Keith Richards had wanted horns on “Satisfaction”, because he was becoming more and more influenced by soul music, and he finally got them on what was planned to be another surefire number one single — specifically, he got a horn section made up entirely of trumpets. The group cut a backing track in RCA, with Dave Hassinger engineering, as part of a session where they also cut the basic tracks for what became the UK version of their album Between The Buttons (the US version would have a couple of hit singles replacing some of the album tracks).
+The initial track they recorded was, by all accounts, fantastic, with Jack Nitzsche adding piano to the group’s rhythm section, as he so often did. But rather strangely — given they had Jack Nitzsche, probably the most talented arranger for rock music in the world at that point, working for them for nothing
+------------------------
+output:
+("entity"{tuple_delimiter}ROLLING STONES{tuple_delimiter}ARTIST{tuple_delimiter}The Rolling Stones are a British rock band known for their influential music and energetic performances, particularly in the 1960s and 1970s.)
+{record_delimiter}
+("entity"{tuple_delimiter}HAVE YOU SEEN YOUR MOTHER BABY, STANDING IN THE SHADOW?{tuple_delimiter}SONG{tuple_delimiter}“Have You Seen Your Mother Baby, Standing In the Shadow?” is a song by The Rolling Stones, characterized by its rock sound and notable horn section.)
+{record_delimiter}
+("entity"{tuple_delimiter}SATISFACTION{tuple_delimiter}SONG{tuple_delimiter}“Satisfaction” is one of The Rolling Stones' most famous songs, known for its iconic riff and influence on rock music.)
+{record_delimiter}
+("entity"{tuple_delimiter}BETWEEN THE BUTTONS{tuple_delimiter}ALBUM{tuple_delimiter}Between The Buttons is an album by The Rolling Stones, featuring a mix of rock and pop influences, released in the 1960s.)
+{record_delimiter}
+("entity"{tuple_delimiter}DAVE HASSINGER{tuple_delimiter}PERSON{tuple_delimiter}Dave Hassinger was an engineer who worked on recording sessions for The Rolling Stones, contributing to their sound during the 1960s.)
+{record_delimiter}
+("entity"{tuple_delimiter}JACK NITZSCHE{tuple_delimiter}PERSON{tuple_delimiter}Jack Nitzsche was a talented arranger and musician known for his work with The Rolling Stones, particularly in adding piano and orchestration to their tracks.)
+{record_delimiter}
+("relationship"{tuple_delimiter}ROLLING STONES{tuple_delimiter}HAVE YOU SEEN YOUR MOTHER BABY, STANDING IN THE SHADOW?{tuple_delimiter}performed_by{tuple_delimiter}“Have You Seen Your Mother Baby, Standing In the Shadow?” is a song performed by The Rolling Stones.{tuple_delimiter}10)
+{record_delimiter}
+("relationship"{tuple_delimiter}ROLLING STONES{tuple_delimiter}SATISFACTION{tuple_delimiter}performed_by{tuple_delimiter}“Satisfaction” is a song performed by The Rolling Stones.{tuple_delimiter}10)
+{record_delimiter}
+("relationship"{tuple_delimiter}ROLLING STONES{tuple_delimiter}BETWEEN THE BUTTONS{tuple_delimiter}released_by{tuple_delimiter}Between The Buttons is an album released by The Rolling Stones.{tuple_delimiter}10)
+{record_delimiter}
+("relationship"{tuple_delimiter}ROLLING STONES{tuple_delimiter}DAVE HASSINGER{tuple_delimiter}produced_by{tuple_delimiter}Dave Hassinger was the engineer for The Rolling Stones during the recording sessions, contributing to their production.{tuple_delimiter}8)
+{record_delimiter}
+("relationship"{tuple_delimiter}ROLLING STONES{tuple_delimiter}JACK NITZSCHE{tuple_delimiter}composed_by{tuple_delimiter}Jack Nitzsche contributed to the composition of tracks for The Rolling Stones, particularly by adding piano arrangements.{tuple_delimiter}7)
+{completion_delimiter}
+#############################
+
+
+Example 2:
+
+entity_types: [album, artist, song, label, performance, genre]
+relationship_types: [performed_by, released_by, genre_of, composed_by, produced_by, written_by]
+text:
+ probity, he decided to get Jeffery to buy him out of his contract. Jeffery paid three hundred thousand pounds to become Hendrix’s sole manager, and Hendrix took over production:
+[Excerpt: The Jimi Hendrix Experience, “All Along the Watchtower”]
+In some ways, Chandler got out at the right time. “All Along the Watchtower” would be the Jimi Hendrix Experience’s last major hit single — “Crosstown Traffic”, the follow-up, only scraped the bottom of the UK top forty and didn’t get any higher than fifty-two in the US, while “Watchtower” made the top twenty in the US and number five in the UK.
+The track, as finally finished in the Record Plant, is an extraordinary-sounding thing, with a sense of doom which is simply not there in Dylan’s original, and which would soon start a whole subgenre that has been labelled apocalypse rock, and which is indelibly associated with the
+------------------------
+output:
+("entity"{tuple_delimiter}JIMI HENDRIX{tuple_delimiter}ARTIST{tuple_delimiter}Jimi Hendrix was a renowned guitarist and singer-songwriter known for his innovative music and performances, particularly with the Jimi Hendrix Experience.)
+{record_delimiter}
+("entity"{tuple_delimiter}THE JIMI HENDRIX EXPERIENCE{tuple_delimiter}ARTIST{tuple_delimiter}The Jimi Hendrix Experience was a rock band formed by Jimi Hendrix, known for their influential music in the late 1960s.)
+{record_delimiter}
+("entity"{tuple_delimiter}ALL ALONG THE WATCHTOWER{tuple_delimiter}SONG{tuple_delimiter}All Along the Watchtower is a song originally written by Bob Dylan, famously covered by Jimi Hendrix, which became a major hit single for the Jimi Hendrix Experience.)
+{record_delimiter}
+("entity"{tuple_delimiter}CROSSTOWN TRAFFIC{tuple_delimiter}SONG{tuple_delimiter}Crosstown Traffic is a song by the Jimi Hendrix Experience that followed All Along the Watchtower but did not achieve the same level of success.)
+{record_delimiter}
+("entity"{tuple_delimiter}APOCALYPSE ROCK{tuple_delimiter}GENRE{tuple_delimiter}Apocalypse rock is a subgenre of rock music characterized by themes of doom and existential crisis, associated with the sound of Jimi Hendrix's cover of All Along the Watchtower.)
+{record_delimiter}
+("entity"{tuple_delimiter}RECORD PLANT{tuple_delimiter}LABEL{tuple_delimiter}The Record Plant is a recording studio where the final version of All Along the Watchtower was produced, known for its high-quality sound production.)
+{record_delimiter}
+("relationship"{tuple_delimiter}ALL ALONG THE WATCHTOWER{tuple_delimiter}THE JIMI HENDRIX EXPERIENCE{tuple_delimiter}performed_by{tuple_delimiter}All Along the Watchtower was performed by the Jimi Hendrix Experience, showcasing Hendrix's unique interpretation of the song{tuple_delimiter}10)
+{record_delimiter}
+("relationship"{tuple_delimiter}ALL ALONG THE WATCHTOWER{tuple_delimiter}RECORD PLANT{tuple_delimiter}produced_by{tuple_delimiter}The final version of All Along the Watchtower was produced at the Record Plant, highlighting the studio's role in its creation{tuple_delimiter}8)
+{record_delimiter}
+("relationship"{tuple_delimiter}CROSSTOWN TRAFFIC{tuple_delimiter}THE JIMI HENDRIX EXPERIENCE{tuple_delimiter}performed_by{tuple_delimiter}Crosstown Traffic was also performed by the Jimi Hendrix Experience, following their success with All Along the Watchtower{tuple_delimiter}9)
+{record_delimiter}
+("relationship"{tuple_delimiter}ALL ALONG THE WATCHTOWER{tuple_delimiter}APOCALYPSE ROCK{tuple_delimiter}genre_of{tuple_delimiter}All Along the Watchtower is associated with the genre of apocalypse rock due to its themes and sound{tuple_delimiter}7)
+{record_delimiter}
+("relationship"{tuple_delimiter}CROSSTOWN TRAFFIC{tuple_delimiter}APOCALYPSE ROCK{tuple_delimiter}genre_of{tuple_delimiter}Crosstown Traffic is also linked to the genre of apocalypse rock, reflecting similar thematic elements{tuple_delimiter}6)
+{completion_delimiter}
+#############################
+
+
+
+-Real Data-
+######################
+entity_types: [album, artist, song, label, performance, genre]
+relationship_types: [performed_by, released_by, genre_of, composed_by, produced_by, written_by]
+text: {input_text}
+######################
+output:
