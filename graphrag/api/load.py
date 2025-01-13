@@ -8,7 +8,7 @@ import logging
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 
-from awel.templates.music import Album
+from graphrag.awel.templates.music import Album
 
 log = logging.getLogger(__name__)
 
@@ -198,14 +198,16 @@ def load_data(
         """
         Uses LLM Strctured Output, to extract properties from the description property, and update the db
         """
+        # We import Album nodes hard-coded for now. Change it to generic logic.
+        
+        records = driver.execute_query(
+            "MATCH (a:Album) RETURN a AS album",
+            database_="neo4j",
+        )
+
+        df = pd.DataFrame([dict(record["album"]) for record in records]) # CHECK ERROR AND FIX. AI!
 
 
-        statement = """
-                    MATCH (e:__Entity__ {id:value.id})
-                    SET e += value {.human_readable_id}
-                    """
-        print(f"Updating {len(df)} entities with properties")
-        batched_import(statement, df)
 
 
     if progress_logger is None:
