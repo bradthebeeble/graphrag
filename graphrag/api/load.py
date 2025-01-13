@@ -213,21 +213,23 @@ def load_data(
         # We import Album nodes hard-coded for now. Change it to generic logic.
         if not models:
             error("No models provided")
-            return pd.DataFrame()
+            return all_updated_records
             
-        model = models[0]  # Get first model from list. Change this logic to iterate over all models and invoke this code. AI!
-        query = f"""
-            MATCH (n:{model.__name__} )
-            RETURN n AS {model.__name__}
-        """
-        try:
-            records = driver.execute_query(query, database_=NEO4J_DATABASE)
-            
-            if not records.records:
-                info(f"No {model} records found in database")
-                return pd.DataFrame()
+        all_updated_records = pd.DataFrame()
+        
+        for model in models:
+            query = f"""
+                MATCH (n:{model.__name__})
+                RETURN n AS node
+            """
+            try:
+                records = driver.execute_query(query, database_=NEO4J_DATABASE)
                 
-            df = pd.DataFrame([dict(record[model.__name__]) for record in records.records])
+                if not records.records:
+                    info(f"No {model.__name__} records found in database")
+                    continue
+                    
+                df = pd.DataFrame([dict(record["node"]) for record in records.records])
             
         except Exception as e:
             error(f"Error fetching records: {e}")
@@ -278,6 +280,7 @@ def load_data(
             batched_import(statement, df_batch_updated)
             updated_records += len(df_batch_updated)
             print(f"Processed batch {start_idx//batch_size + 1}, updated {updated_records}/{total_records} {model.__name__} nodes")
+            all_updated_records = pd.concat([all_updated_records, df_batch_updated], ignore_index=True)
 
 
     if progress_logger is None:
