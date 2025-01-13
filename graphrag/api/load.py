@@ -220,6 +220,8 @@ def load_data(
         except Exception as e:
             error(f"Error fetching Album records: {e}")
             return pd.DataFrame()
+         # Return an llm-structured output. We use here Langchain even though it is not consistent with the rest of the code.
+         openAiApiKey = "sk-1234567890" # get GRAPHRAG_API_KEY env variable. AI!
 
 
 
