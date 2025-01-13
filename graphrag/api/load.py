@@ -218,7 +218,7 @@ def load_data(
         model = models[0]  # Get first model from list
         try:
             records = driver.execute_query(
-                "MATCH (a:Album) RETURN a AS album",
+                "MATCH (a:Album) RETURN a AS album", # update query to use the model name instead of 'Album'. AI!
                 database_="neo4j",
             )
             
