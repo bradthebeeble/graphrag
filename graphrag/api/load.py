@@ -92,7 +92,6 @@ def load_data(
             create constraint document_id if not exists for (d:__Document__) require d.id is unique;
             create constraint entity_id if not exists for (c:__Community__) require c.community is unique;
             create constraint entity_id if not exists for (e:__Entity__) require e.id is unique;
-            create constraint entity_title if not exists for (e:__Entity__) require e.name is unique;
             create constraint entity_title if not exists for (e:__Covariate__) require e.title is unique;
             create constraint related_id if not exists for ()-[rel:RELATED]->() require rel.id is unique;
             """.split(";")
@@ -207,15 +206,18 @@ def load_data(
         batched_import(statement, df)
 
     def update_entites_with_properties(models: list, df: pd.DataFrame):
+        
         """
         Uses LLM Strctured Output, to extract properties from the description property, and update the db
         """
-        # We import Album nodes hard-coded for now. Change it to generic logic.
+        from pydantic import SecretStr
+        from langchain_openai import ChatOpenAI
+
+        all_updated_records = pd.DataFrame()
         if not models:
             error("No models provided")
             return all_updated_records
             
-        all_updated_records = pd.DataFrame()
         
         for model in models:
             query = f"""
@@ -231,56 +233,55 @@ def load_data(
                     
                 df = pd.DataFrame([dict(record["node"]) for record in records.records])
             
-        except Exception as e:
-            error(f"Error fetching records: {e}")
-            return pd.DataFrame()
-        # Process records in batches
-        from pydantic import SecretStr
-        from langchain_openai import ChatOpenAI
-        
-        openai_api_key = config.llm.api_key
-        if not openai_api_key:
-            error("OpenAI API key not configured in LLM settings")
-            return pd.DataFrame()
+            except Exception as e:
+                error(f"Error fetching records: {e}")
+                return pd.DataFrame()
+            # Process records in batches
             
-        llm = ChatOpenAI(
-            model=config.llm.model,
-            api_key=SecretStr(openai_api_key),
-        )
-        structured_llm = llm.with_structured_output(getattr(music, f"ListOf{model.__name__}s"))
-        
-        # Process DataFrame in batches of 10
-        batch_size = 10
-        total_records = len(df)
-        updated_records = 0
-        
-        for start_idx in range(0, total_records, batch_size):
-            end_idx = min(start_idx + batch_size, total_records)
-            batch_df = df.iloc[start_idx:end_idx]
             
-            # Process batch through LLM
-            list_of_items = structured_llm.invoke(batch_df.to_string())
-            list_of_dicts = [vars(obj) for obj in list_of_items.items]
-            df_batch_updated = pd.DataFrame(list_of_dicts)
+            openai_api_key = config.llm.api_key
+            if not openai_api_key:
+                error("OpenAI API key not configured in LLM settings")
+                return pd.DataFrame()
+                
+            llm = ChatOpenAI(
+                model=config.llm.model,
+                api_key=SecretStr(openai_api_key),
+            )
+            structured_llm = llm.with_structured_output(getattr(music, f"ListOf{model.__name__}s"))
             
-            # Create the SET clause dynamically
-            fields = model.model_fields.keys()
-            set_statements = [
-                f"n.{field} = value.{field}"
-                for field in fields
-            ]
-            set_clause = ",\n                ".join(set_statements)
+            # Process DataFrame in batches of 10
+            batch_size = 35
+            total_records = len(df)
+            updated_records = 0
             
-            # Create and execute the query for this batch
-            statement = f"""
-                MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
-                SET {set_clause}
-            """
-            
-            batched_import(statement, df_batch_updated)
-            updated_records += len(df_batch_updated)
-            print(f"Processed batch {start_idx//batch_size + 1}, updated {updated_records}/{total_records} {model.__name__} nodes")
-            all_updated_records = pd.concat([all_updated_records, df_batch_updated], ignore_index=True)
+            for start_idx in range(0, total_records, batch_size):
+                end_idx = min(start_idx + batch_size, total_records)
+                batch_df = df.iloc[start_idx:end_idx]
+                
+                # Process batch through LLM
+                list_of_items = structured_llm.invoke(batch_df.to_string())
+                list_of_dicts = [vars(obj) for obj in list_of_items.items]
+                df_batch_updated = pd.DataFrame(list_of_dicts)
+                
+                # Create the SET clause dynamically
+                fields = model.model_fields.keys()
+                set_statements = [
+                    f"n.{field} = value.{field}"
+                    for field in fields
+                ]
+                set_clause = ",\n                ".join(set_statements)
+                
+                # Create and execute the query for this batch
+                statement = f"""
+                    MERGE (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+                    SET {set_clause}
+                """
+                
+                batched_import(statement, df_batch_updated)
+                updated_records += len(df_batch_updated)
+                print(f"Processed batch {start_idx//batch_size + 1}, updated {updated_records}/{total_records} {model.__name__} nodes")
+                all_updated_records = pd.concat([all_updated_records, df_batch_updated], ignore_index=True)
 
 
     if progress_logger is None:
@@ -307,14 +308,14 @@ def load_data(
         # Filter out ListOf models
         music_models = [model for model in music_models if not model.__name__.startswith('ListOf')]
        
-        # create_db_constraints()
-        # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
-        # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
-        # load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
-        # load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
-        # if should_load_communities:
-        #     load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
-        #     load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
+        create_db_constraints()
+        import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
+        load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
+        load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
+        load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
+        if should_load_communities:
+            load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
+            load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
         update_entites_with_properties(music_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
 
         return True
