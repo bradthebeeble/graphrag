@@ -218,15 +218,15 @@ def load_data(
         model = models[0]  # Get first model from list
         try:
             records = driver.execute_query(
-                Query("MATCH (a:$type) RETURN a AS $type", {type: model}), # update query to use the model name instead of 'Album'. AI!
+                Query(f"MATCH (a:{model.__name__}) RETURN a AS node"),
                 database_="neo4j",
             )
             
             if not records.records:
-                info("No Album records found in database")
+                info(f"No {model.__name__} records found in database")
                 return pd.DataFrame()
                 
-            df = pd.DataFrame([dict(record["album"]) for record in records.records])
+            df = pd.DataFrame([dict(record["node"]) for record in records.records])
             
         except Exception as e:
             error(f"Error fetching records: {e}")
