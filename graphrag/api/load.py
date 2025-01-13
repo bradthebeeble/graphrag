@@ -76,10 +76,9 @@ def load_data(
         start_s = time.time()
         for start in range(0,total, batch_size):
             batch = df.iloc[start: min(start+batch_size,total)]
-            result = driver.execute_query(
-                Query("UNWIND $rows AS value " + statement),
-                rows=batch.to_dict('records'),
-                database_=NEO4J_DATABASE)
+            result = driver.execute_query("UNWIND $rows AS value " + statement,
+                                        rows=batch.to_dict('records'),
+                                        database_=NEO4J_DATABASE)
             print(result.summary.counters)
         print(f'{total} rows in { time.time() - start_s} s.')
         return total
@@ -100,7 +99,7 @@ def load_data(
 
         for statement in statements:
             if len((statement or "").strip()) > 0:
-                driver.execute_query(Query(statement))
+                driver.execute_query(statement)
 
     def import_documents(df: pd.DataFrame):
         """
@@ -219,7 +218,7 @@ def load_data(
         model = models[0]  # Get first model from list
         try:
             records = driver.execute_query(
-                Query(f"MATCH (a:{model.__name__}) RETURN a AS node"),
+                Query("MATCH (a:Album) RETURN a AS album"), # update query to use the model name instead of 'Album'. AI!
                 database_="neo4j",
             )
             
@@ -227,7 +226,7 @@ def load_data(
                 info("No Album records found in database")
                 return pd.DataFrame()
                 
-            df = pd.DataFrame([dict(record["node"]) for record in records.records])
+            df = pd.DataFrame([dict(record["album"]) for record in records.records])
             
         except Exception as e:
             error(f"Error fetching records: {e}")
