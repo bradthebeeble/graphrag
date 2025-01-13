@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.logger.base import ProgressLogger
 import pandas as pd
@@ -8,9 +9,20 @@ import logging
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 
-from graphrag.awel.templates.music import Album
+# Loading the music template
+import graphrag.awel.templates.music as music
+import inspect
+
 
 log = logging.getLogger(__name__)
+
+def get_all_models(module):
+    return [
+        obj for name, obj in inspect.getmembers(module)
+        if inspect.isclass(obj) 
+        and issubclass(obj, BaseModel) 
+        and obj != BaseModel
+    ]
 
 
 def _logger(logger: ProgressLogger):
@@ -210,14 +222,10 @@ def load_data(
                 info("No Album records found in database")
                 return pd.DataFrame()
                 
-            df = pd.DataFrame([
-                dict(record["album"]) 
-                for record in records.records
-                if record and "album" in record
-            ])
+            df = pd.DataFrame([dict(record["album"]) for record in records.records])
             
         except Exception as e:
-            error(f"Error fetching Album records: {e}")
+            error(f"Error fetching records: {e}")
             return pd.DataFrame()
          # Return an llm-structured output. We use here Langchain even though it is not consistent with the rest of the code.
         from pydantic import SecretStr
@@ -228,11 +236,24 @@ def load_data(
             
         from langchain_openai import ChatOpenAI
         llm = ChatOpenAI(
-            model_name=config.llm.model,
-            openai_api_key=SecretStr(openai_api_key),
-            temperature=0
+            model=config.llm.model,
+            api_key=SecretStr(openai_api_key),
         )
-        return llm
+        structured_llm = llm.with_structured_output(ListOfAlbums)
+        list_of_items = structured_llm.invoke(df.to_string()) # TODO: might be a scaling issue in the future
+        list_of_dicts = [vars(obj) for obj in list_of_items.items]
+        df_with_updated_vals = pd.DataFrame(list_of_dicts)
+        statement = """
+                    MATCH (a:Album {human_readable_id:value.human_readable_id})
+                    SET a.title = value.title,
+                        a.artist = value.artist,
+                        a.year = value.year,
+                        a.release_date = value.release_date,
+                        a.label = value.label,
+                        a.genre = value.genre
+                    """
+        print(f"Updated {len(df_with_updated_vals)} albums")
+        batched_import(statement, df_with_updated_vals)
 
 
     if progress_logger is None:
@@ -253,15 +274,21 @@ def load_data(
         driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
         driver.verify_connectivity()
         info("Neo4j driver initialized successfully.")
-        create_db_constraints()
-        import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
-        load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
-        load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
-        load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
-        if should_load_communities:
-            load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
-            load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
-        update_entites_with_properties(dataframe_dict["create_final_entities"][["id","human_readable_id, description"]])
+        # Get all models from music.py
+        music_models = get_all_models(music)
+
+        # Print them out
+        for model in music_models:
+            print(f"Found model: {model.__name__}") # Filter modules that start with ListOf. AI!
+        # create_db_constraints()
+        # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
+        # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
+        # load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
+        # load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
+        # if should_load_communities:
+        #     load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
+        #     load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
+        # update_entites_with_properties(dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
 
         return True
     except Exception as e:
