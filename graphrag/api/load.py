@@ -206,7 +206,7 @@ def load_data(
         print(f"Loading {len(df)} communities reports")
         batched_import(statement, df)
 
-    def update_entites_with_properties(models: list[str], df: pd.DataFrame):
+    def update_entites_with_properties(models: list, df: pd.DataFrame):
         """
         Uses LLM Strctured Output, to extract properties from the description property, and update the db
         """
@@ -216,21 +216,24 @@ def load_data(
             return pd.DataFrame()
             
         model = models[0]  # Get first model from list
+        query = f"""
+            MATCH (n:{model.__name__} )
+            RETURN n AS {model.__name__}
+        """
         try:
-            records = driver.execute_query(
-                Query(f"MATCH (a:{model.__name__}) RETURN a AS node"),
-                database_="neo4j",
-            )
+            records = driver.execute_query(query, database_=NEO4J_DATABASE)
             
             if not records.records:
-                info(f"No {model.__name__} records found in database")
+                info(f"No {model} records found in database")
                 return pd.DataFrame()
                 
-            df = pd.DataFrame([dict(record["node"]) for record in records.records])
+            df = pd.DataFrame([dict(record[model.__name__]) for record in records.records])
             
         except Exception as e:
             error(f"Error fetching records: {e}")
             return pd.DataFrame()
+        # From START CODE to END CODE iterate df_with_updated_vals each time with 10 rows,. AI!
+        # START CODE.
          # Return an llm-structured output. We use here Langchain even though it is not consistent with the rest of the code.
         from pydantic import SecretStr
         openai_api_key = config.llm.api_key
@@ -243,21 +246,29 @@ def load_data(
             model=config.llm.model,
             api_key=SecretStr(openai_api_key),
         )
-        structured_llm = llm.with_structured_output(ListOfAlbums)
+        structured_llm = llm.with_structured_output(getattr(music, f"ListOf{model.__name__}s"))
         list_of_items = structured_llm.invoke(df.to_string()) # TODO: might be a scaling issue in the future
         list_of_dicts = [vars(obj) for obj in list_of_items.items]
         df_with_updated_vals = pd.DataFrame(list_of_dicts)
-        statement = """
-                    MATCH (a:Album {human_readable_id:value.human_readable_id})
-                    SET a.title = value.title,
-                        a.artist = value.artist,
-                        a.year = value.year,
-                        a.release_date = value.release_date,
-                        a.label = value.label,
-                        a.genre = value.genre
-                    """
-        print(f"Updated {len(df_with_updated_vals)} albums")
+        fields = model.model_fields.keys()
+        # Create the SET clause dynamically
+        set_statements = [
+            f"n.{field} = value.{field}"
+            for field in fields
+        ]
+    
+        # Join all SET statements with commas
+        set_clause = ",\n                ".join(set_statements)
+    
+        # Create the full query
+        statement = f"""
+            MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+            SET {set_clause}
+        """
+
+        print(f"Updated {len(df_with_updated_vals)} {model.__name__} nodes")
         batched_import(statement, df_with_updated_vals)
+        # END CODE.
 
 
     if progress_logger is None:
