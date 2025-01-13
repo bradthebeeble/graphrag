@@ -277,10 +277,10 @@ def load_data(
         # Get all models from music.py
         music_models = get_all_models(music)
 
-        # Print ListOf models only
+        # Filter out ListOf models
+        music_models = [model for model in music_models if not model.__name__.startswith('ListOf')]
         for model in music_models:
-            if not model.__name__.startswith('ListOf'):
-                print(f"Found ListOf model: {model.__name__}") # instead of printing , filter the music_models list to not include names that start with ListOf, AI!
+            print(f"Found model: {model.__name__}")
         # create_db_constraints()
         # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
         # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
