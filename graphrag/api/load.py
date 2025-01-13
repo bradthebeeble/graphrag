@@ -206,12 +206,12 @@ def load_data(
         print(f"Loading {len(df)} communities reports")
         batched_import(statement, df)
 
-    def update_entites_with_properties(df: pd.DataFrame):
+    def update_entites_with_properties(models: list[str], df: pd.DataFrame):
         """
         Uses LLM Strctured Output, to extract properties from the description property, and update the db
         """
         # We import Album nodes hard-coded for now. Change it to generic logic.
-        
+        # assign the first elm in models list to a var. AI!
         try:
             records = driver.execute_query(
                 "MATCH (a:Album) RETURN a AS album",
@@ -279,8 +279,7 @@ def load_data(
 
         # Filter out ListOf models
         music_models = [model for model in music_models if not model.__name__.startswith('ListOf')]
-        for model in music_models:
-            print(f"Found model: {model.__name__}")
+       
         # create_db_constraints()
         # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
         # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
@@ -289,7 +288,7 @@ def load_data(
         # if should_load_communities:
         #     load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
         #     load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
-        # update_entites_with_properties(dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
+        update_entites_with_properties(music_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
 
         return True
     except Exception as e:
