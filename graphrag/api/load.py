@@ -232,43 +232,52 @@ def load_data(
         except Exception as e:
             error(f"Error fetching records: {e}")
             return pd.DataFrame()
-        # From START CODE to END CODE iterate df_with_updated_vals each time with 10 rows,. AI!
-        # START CODE.
-         # Return an llm-structured output. We use here Langchain even though it is not consistent with the rest of the code.
+        # Process records in batches
         from pydantic import SecretStr
+        from langchain_openai import ChatOpenAI
+        
         openai_api_key = config.llm.api_key
         if not openai_api_key:
             error("OpenAI API key not configured in LLM settings")
             return pd.DataFrame()
             
-        from langchain_openai import ChatOpenAI
         llm = ChatOpenAI(
             model=config.llm.model,
             api_key=SecretStr(openai_api_key),
         )
         structured_llm = llm.with_structured_output(getattr(music, f"ListOf{model.__name__}s"))
-        list_of_items = structured_llm.invoke(df.to_string()) # TODO: might be a scaling issue in the future
-        list_of_dicts = [vars(obj) for obj in list_of_items.items]
-        df_with_updated_vals = pd.DataFrame(list_of_dicts)
-        fields = model.model_fields.keys()
-        # Create the SET clause dynamically
-        set_statements = [
-            f"n.{field} = value.{field}"
-            for field in fields
-        ]
-    
-        # Join all SET statements with commas
-        set_clause = ",\n                ".join(set_statements)
-    
-        # Create the full query
-        statement = f"""
-            MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
-            SET {set_clause}
-        """
-
-        print(f"Updated {len(df_with_updated_vals)} {model.__name__} nodes")
-        batched_import(statement, df_with_updated_vals)
-        # END CODE.
+        
+        # Process DataFrame in batches of 10
+        batch_size = 10
+        total_records = len(df)
+        updated_records = 0
+        
+        for start_idx in range(0, total_records, batch_size):
+            end_idx = min(start_idx + batch_size, total_records)
+            batch_df = df.iloc[start_idx:end_idx]
+            
+            # Process batch through LLM
+            list_of_items = structured_llm.invoke(batch_df.to_string())
+            list_of_dicts = [vars(obj) for obj in list_of_items.items]
+            df_batch_updated = pd.DataFrame(list_of_dicts)
+            
+            # Create the SET clause dynamically
+            fields = model.model_fields.keys()
+            set_statements = [
+                f"n.{field} = value.{field}"
+                for field in fields
+            ]
+            set_clause = ",\n                ".join(set_statements)
+            
+            # Create and execute the query for this batch
+            statement = f"""
+                MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+                SET {set_clause}
+            """
+            
+            batched_import(statement, df_batch_updated)
+            updated_records += len(df_batch_updated)
+            print(f"Processed batch {start_idx//batch_size + 1}, updated {updated_records}/{total_records} {model.__name__} nodes")
 
 
     if progress_logger is None:
