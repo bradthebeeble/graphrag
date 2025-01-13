@@ -5,8 +5,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-# My entity types are: album, artist, song, label, performance, genre. For each one I should have a class and a "ListOf<class>" class like I already have for album and song. Come out with 4-6 reasonable properties. AI!
-
 # Pydantic
 class Album(BaseModel):
     """A music album."""
@@ -38,3 +36,51 @@ class Song(BaseModel):
 
 class ListOfSongs(BaseModel):
     items: List[Song] = Field(description="A list of songs")
+
+class Artist(BaseModel):
+    """A music artist."""
+    id: int = Field(description="Auto-generated uuid for the artist")
+    human_readable_id: int = Field(description="Human-readable id for the artist. Echo it back from the input")
+    name: str = Field(description="The name of the artist")
+    country: Optional[str] = Field(default=None, description="The country of origin")
+    active_since: Optional[int] = Field(default=None, description="Year when the artist became active")
+    genres: Optional[List[str]] = Field(default=None, description="List of genres associated with the artist")
+
+class ListOfArtists(BaseModel):
+    items: List[Artist] = Field(description="A list of artists")
+
+class Label(BaseModel):
+    """A music label."""
+    id: int = Field(description="Auto-generated uuid for the label")
+    human_readable_id: int = Field(description="Human-readable id for the label. Echo it back from the input")
+    name: str = Field(description="The name of the label")
+    founded: Optional[int] = Field(default=None, description="Year the label was founded")
+    country: Optional[str] = Field(default=None, description="Country where the label is based")
+    parent_company: Optional[str] = Field(default=None, description="Parent company of the label")
+
+class ListOfLabels(BaseModel):
+    items: List[Label] = Field(description="A list of labels")
+
+class Performance(BaseModel):
+    """A music performance."""
+    id: int = Field(description="Auto-generated uuid for the performance")
+    human_readable_id: int = Field(description="Human-readable id for the performance. Echo it back from the input")
+    artist: str = Field(description="The performing artist")
+    venue: str = Field(description="The venue of the performance")
+    date: Optional[str] = Field(default=None, description="Date of the performance")
+    setlist: Optional[List[str]] = Field(default=None, description="List of songs performed")
+
+class ListOfPerformances(BaseModel):
+    items: List[Performance] = Field(description="A list of performances")
+
+class Genre(BaseModel):
+    """A music genre."""
+    id: int = Field(description="Auto-generated uuid for the genre")
+    human_readable_id: int = Field(description="Human-readable id for the genre. Echo it back from the input")
+    name: str = Field(description="The name of the genre")
+    description: Optional[str] = Field(default=None, description="Description of the genre")
+    parent_genre: Optional[str] = Field(default=None, description="Parent genre if this is a subgenre")
+    era: Optional[str] = Field(default=None, description="The primary era of the genre")
+
+class ListOfGenres(BaseModel):
+    items: List[Genre] = Field(description="A list of genres")
