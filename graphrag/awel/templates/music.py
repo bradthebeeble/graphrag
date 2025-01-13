@@ -5,6 +5,8 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+# My entity types are: album, artist, song, label, performance, genre. For each one I should have a class and a "ListOf<class>" class like I already have for album and song. Come out with 4-6 reasonable properties. AI!
+
 # Pydantic
 class Album(BaseModel):
     """A music album."""
