@@ -211,7 +211,11 @@ def load_data(
         Uses LLM Strctured Output, to extract properties from the description property, and update the db
         """
         # We import Album nodes hard-coded for now. Change it to generic logic.
-        # assign the first elm in models list to a var. AI!
+        if not models:
+            error("No models provided")
+            return pd.DataFrame()
+            
+        model = models[0]  # Get first model from list
         try:
             records = driver.execute_query(
                 "MATCH (a:Album) RETURN a AS album",
