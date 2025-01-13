@@ -1,4 +1,3 @@
-import asyncio
 from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.logger.base import ProgressLogger
 import pandas as pd
@@ -8,6 +7,8 @@ import logging
 
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
+
+from awel.templates.music import Album
 
 log = logging.getLogger(__name__)
 
@@ -193,6 +194,20 @@ def load_data(
         print(f"Loading {len(df)} communities reports")
         batched_import(statement, df)
 
+    def update_entites_with_properties(df: pd.DataFrame):
+        """
+        Uses LLM Strctured Output, to extract properties from the description property, and update the db
+        """
+
+
+        statement = """
+                    MATCH (e:__Entity__ {id:value.id})
+                    SET e += value {.human_readable_id}
+                    """
+        print(f"Updating {len(df)} entities with properties")
+        batched_import(statement, df)
+
+
     if progress_logger is None:
             progress_logger = LoggerFactory().create_logger(LoggerType(LoggerType.RICH))
 
@@ -219,6 +234,7 @@ def load_data(
         if should_load_communities:
             load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
             load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
+        update_entites_with_properties(dataframe_dict["create_final_entities"][["id","human_readable_id, description"]])
 
         return True
     except Exception as e:
