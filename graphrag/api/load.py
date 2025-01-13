@@ -279,8 +279,8 @@ def load_data(
 
         # Print ListOf models only
         for model in music_models:
-            if model.__name__.startswith('ListOf'):
-                print(f"Found ListOf model: {model.__name__}")
+            if not model.__name__.startswith('ListOf'):
+                print(f"Found ListOf model: {model.__name__}") # instead of printing , filter the music_models list to not include names that start with ListOf, AI!
         # create_db_constraints()
         # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
         # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
