@@ -220,9 +220,19 @@ def load_data(
             error(f"Error fetching Album records: {e}")
             return pd.DataFrame()
          # Return an llm-structured output. We use here Langchain even though it is not consistent with the rest of the code.
+        from pydantic import SecretStr
         openai_api_key = config.llm.api_key
+        if not openai_api_key:
+            error("OpenAI API key not configured in LLM settings")
+            return pd.DataFrame()
+            
         from langchain_openai import ChatOpenAI
-        llm = ChatOpenAI(model=config.llm.model, api_key=SecretStr(openai_api_key)) #FIx error ,AI!
+        llm = ChatOpenAI(
+            model_name=config.llm.model,
+            openai_api_key=SecretStr(openai_api_key),
+            temperature=0
+        )
+        return llm
 
 
     if progress_logger is None:
