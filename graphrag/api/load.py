@@ -215,7 +215,7 @@ def load_data(
             error("No models provided")
             return pd.DataFrame()
             
-        model = models[0]  # Get first model from list
+        model = models[0]  # Get first model from list. Change this logic to iterate over all models and invoke this code. AI!
         query = f"""
             MATCH (n:{model.__name__} )
             RETURN n AS {model.__name__}
