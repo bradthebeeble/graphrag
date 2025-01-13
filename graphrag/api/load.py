@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.logger.base import ProgressLogger
 import pandas as pd
-from neo4j import Driver, GraphDatabase
+from neo4j import Driver, GraphDatabase, Query
 import time
 import logging
 
@@ -76,9 +76,10 @@ def load_data(
         start_s = time.time()
         for start in range(0,total, batch_size):
             batch = df.iloc[start: min(start+batch_size,total)]
-            result = driver.execute_query("UNWIND $rows AS value " + statement,
-                                        rows=batch.to_dict('records'),
-                                        database_=NEO4J_DATABASE)
+            result = driver.execute_query(
+                Query("UNWIND $rows AS value " + statement),
+                rows=batch.to_dict('records'),
+                database_=NEO4J_DATABASE)
             print(result.summary.counters)
         print(f'{total} rows in { time.time() - start_s} s.')
         return total
@@ -99,7 +100,7 @@ def load_data(
 
         for statement in statements:
             if len((statement or "").strip()) > 0:
-                driver.execute_query(statement)
+                driver.execute_query(Query(statement))
 
     def import_documents(df: pd.DataFrame):
         """
@@ -218,7 +219,7 @@ def load_data(
         model = models[0]  # Get first model from list
         try:
             records = driver.execute_query(
-                f"MATCH (a:{model.__name__}) RETURN a AS node",
+                Query(f"MATCH (a:{model.__name__}) RETURN a AS node"),
                 database_="neo4j",
             )
             
