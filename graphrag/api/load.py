@@ -222,7 +222,7 @@ def load_data(
          # Return an llm-structured output. We use here Langchain even though it is not consistent with the rest of the code.
         openai_api_key = config.llm.api_key
         from langchain_openai import ChatOpenAI
-        llm = ChatOpenAI(model=config.llm.model, api_key=openai_api_key) #FIx error ,AI!
+        llm = ChatOpenAI(model=config.llm.model, api_key=SecretStr(openai_api_key)) #FIx error ,AI!
 
 
     if progress_logger is None:
