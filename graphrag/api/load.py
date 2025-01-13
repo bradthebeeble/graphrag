@@ -200,13 +200,26 @@ def load_data(
         """
         # We import Album nodes hard-coded for now. Change it to generic logic.
         
-        records = driver.execute_query(
-            "MATCH (a:Album) RETURN a AS album",
-            database_="neo4j",
-        )
-
-        df = pd.DataFrame([dict(record["album"]) for record in records]) # CHECK ERROR AND FIX. AI!
-
+        try:
+            records = driver.execute_query(
+                "MATCH (a:Album) RETURN a AS album",
+                database_="neo4j",
+            )
+            
+            if not records.records:
+                info("No Album records found in database")
+                return pd.DataFrame()
+                
+            df = pd.DataFrame([
+                dict(record["album"]) 
+                for record in records.records
+                if record and "album" in record
+            ])
+            return df
+            
+        except Exception as e:
+            error(f"Error fetching Album records: {e}")
+            return pd.DataFrame()
 
 
 
