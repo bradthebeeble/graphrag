@@ -57,9 +57,9 @@
 			"args": [
 				"poe", "prompt_tune",
 				"--root", "${env:PROJECT_ROOT}",
-				"--output", "../awel-dealership/prompts/",
+				"--output", "${env:PROJECT_ROOT}prompts/",
 				"--config",
-				"../awel-dealership/settings.yaml",
+				"${env:PROJECT_ROOT}settings.yaml",
 				"--no-discover-entity-types"
 			]
 		}
