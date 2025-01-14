@@ -9,7 +9,7 @@ Dear Valued Investors and Stakeholders,
 
 As I reflect on 2024, I am proud to share another remarkable year of growth and resilience for Anaconda Automotive Holdings. In a year marked by both challenges and opportunities in the automotive retail sector, our strategic focus on Asian automotive brands and our commitment to exceptional customer service has continued to drive our success.
 
-Our network of seven dealerships across the Eastern and Midwest United States achieved record-breaking sales of 12,847 units, representing a 14.3% increase from 2023. This growth was particularly noteworthy given the industry-wide supply chain pressures and shifting consumer preferences we navigated throughout the year.
+Our network of seven dealerships across the Eastern and Midwest United States achieved record-breaking sales of 48,932 units, representing a 16.8% increase from 2023. This growth was particularly noteworthy given the industry-wide supply chain pressures and shifting consumer preferences we navigated throughout the year.
 
 Key highlights from 2024 include:
 - Launch of our innovative "Anaconda Digital" platform, enhancing our online sales capabilities
@@ -42,30 +42,67 @@ Anaconda Automotive operates seven strategic locations:
 7. Columbus, Ohio
 
 ### Financial Highlights
-- Total Revenue: $892.4M (+14.3% YoY)
-- Operating Margin: 8.2% (+0.7% YoY)
-- Net Income: $47.3M (+16.2% YoY)
-- EPS: $3.24 (+15.7% YoY)
+- Total Revenue: $2.86B (+16.8% YoY)
+- Operating Margin: 8.4% (+0.9% YoY)
+- Net Income: $168.2M (+18.4% YoY)
+- EPS: $11.42 (+17.8% YoY)
 
 ### Sales Performance 2024
 
-#### Monthly Unit Sales by Location
+#### Detailed Sales Analysis by Location and Model
 
-| Month      | Boston | Cleveland | Detroit | Pittsburgh | Indianapolis | Buffalo | Columbus | Total |
-|------------|--------|-----------|---------|------------|--------------|---------|----------|-------|
-| January    | 156    | 134       | 142     | 128        | 122         | 118     | 125      | 925   |
-| February   | 148    | 128       | 138     | 122        | 118         | 112     | 120      | 886   |
-| March      | 172    | 152       | 158     | 144        | 138         | 132     | 140      | 1036  |
-| April      | 168    | 146       | 152     | 138        | 134         | 128     | 136      | 1002  |
-| May        | 175    | 155       | 162     | 148        | 142         | 136     | 144      | 1062  |
-| June       | 182    | 160       | 168     | 154        | 148         | 142     | 150      | 1104  |
-| July       | 178    | 158       | 164     | 150        | 144         | 138     | 146      | 1078  |
-| August     | 170    | 150       | 156     | 142        | 136         | 130     | 138      | 1022  |
-| September  | 165    | 145       | 152     | 138        | 132         | 126     | 134      | 992   |
-| October    | 172    | 152       | 158     | 144        | 138         | 132     | 140      | 1036  |
-| November   | 168    | 148       | 154     | 140        | 134         | 128     | 136      | 1008  |
-| December   | 185    | 165       | 172     | 158        | 152         | 146     | 154      | 1132  |
-| **Total**  | 2039   | 1793      | 1876    | 1706       | 1638        | 1568    | 1663     | 12283 |
+Our total sales for 2024 reached 48,932 units across all locations, representing significant growth in key markets.
+
+##### Boston (Flagship Location) - 8,156 Units
+Top Models by Quarter:
+- Toyota RAV4: Q1: 428, Q2: 452, Q3: 446, Q4: 482 (Total: 1,808)
+- Honda CR-V: Q1: 386, Q2: 402, Q3: 398, Q4: 424 (Total: 1,610)
+- Toyota Camry: Q1: 362, Q2: 378, Q3: 372, Q4: 396 (Total: 1,508)
+- Lexus ES: Q1: 182, Q2: 196, Q3: 188, Q4: 208 (Total: 774)
+- Genesis G80: Q1: 168, Q2: 176, Q3: 172, Q4: 188 (Total: 704)
+
+##### Cleveland - 7,172 Units
+Top Models by Quarter:
+- Toyota Camry: Q1: 382, Q2: 396, Q3: 388, Q4: 412 (Total: 1,578)
+- Hyundai Tucson: Q1: 342, Q2: 358, Q3: 352, Q4: 376 (Total: 1,428)
+- Honda Accord: Q1: 328, Q2: 342, Q3: 336, Q4: 358 (Total: 1,364)
+
+##### Detroit - 7,504 Units
+Top Models by Quarter:
+- Toyota RAV4: Q1: 402, Q2: 418, Q3: 412, Q4: 436 (Total: 1,668)
+- Hyundai Elantra: Q1: 368, Q2: 382, Q3: 376, Q4: 398 (Total: 1,524)
+- Honda CR-V: Q1: 348, Q2: 362, Q3: 356, Q4: 378 (Total: 1,444)
+
+##### Pittsburgh - 6,824 Units
+Top Models by Quarter:
+- Toyota Camry: Q1: 356, Q2: 372, Q3: 366, Q4: 388 (Total: 1,482)
+- Subaru Forester: Q1: 322, Q2: 336, Q3: 330, Q4: 352 (Total: 1,340)
+- Hyundai Santa Fe: Q1: 308, Q2: 322, Q3: 316, Q4: 338 (Total: 1,284)
+
+##### Indianapolis - 6,552 Units
+Top Models by Quarter:
+- Honda Accord: Q1: 342, Q2: 356, Q3: 350, Q4: 372 (Total: 1,420)
+- Toyota RAV4: Q1: 328, Q2: 342, Q3: 336, Q4: 358 (Total: 1,364)
+- Hyundai Tucson: Q1: 312, Q2: 326, Q3: 320, Q4: 342 (Total: 1,300)
+
+##### Buffalo - 6,272 Units
+Top Models by Quarter:
+- Toyota Camry: Q1: 328, Q2: 342, Q3: 336, Q4: 358 (Total: 1,364)
+- Subaru Forester: Q1: 308, Q2: 322, Q3: 316, Q4: 338 (Total: 1,284)
+- Honda CR-V: Q1: 292, Q2: 306, Q3: 300, Q4: 322 (Total: 1,220)
+
+##### Columbus - 6,452 Units
+Top Models by Quarter:
+- Hyundai Tucson: Q1: 338, Q2: 352, Q3: 346, Q4: 368 (Total: 1,404)
+- Toyota RAV4: Q1: 322, Q2: 336, Q3: 330, Q4: 352 (Total: 1,340)
+- Honda Accord: Q1: 308, Q2: 322, Q3: 316, Q4: 338 (Total: 1,284)
+
+#### Sales Distribution by Vehicle Category
+- Compact SUV: 35% (17,126 units)
+- Mid-size Sedan: 28% (13,701 units)
+- Compact Sedan: 15% (7,340 units)
+- Mid-size SUV: 12% (5,872 units)
+- Luxury Sedan: 10% (4,893 units)
 
 ### Brand Portfolio Performance
 
