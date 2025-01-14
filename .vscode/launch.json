@@ -23,7 +23,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "index",
-				"--root", "../awel-dealership/"
+				"--root", "${env:PROJECT_ROOT}"
 			],
 		},
 		{
