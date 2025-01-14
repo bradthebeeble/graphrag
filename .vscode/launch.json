@@ -12,7 +12,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "init",
-				"--root", "../500songs-batch1/"
+				"--root", "../awel-dealership/"
 			],
 		},
 		{
@@ -22,7 +22,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "index",
-				"--root", "../500songs-batch1/"
+				"--root", "../awel-dealership/"
 			],
 		},
 		{
@@ -32,7 +32,8 @@
 			"module": "poetry",
 			"args": [
 				"poe", "load",
-				"--root", "../500songs-batch1/"
+				"--root", "../awel-dealership/",
+				"--load-communities"
 			],
 		},
 		{
@@ -42,10 +43,9 @@
 			"module": "poetry",
 			"args": [
 				"poe", "query",
-				"--root", "../500songs-batch1/",
+				"--root", "../awel-dealership/",
 				"--method", "local",
-				"--query", "What is Paint it Black and what impact did it have?",
-				"--response-type", "two statements"
+				"--query", "Find data on our Janurary vehicles sales at Cleveland: Historical monthly sales for the past six months,competitor pricing on similar models,a local market trend indicator for luxury cars, and a brief overview of top complaints or negative feedback from our customers",
 			]
 		},
 		{
@@ -55,10 +55,10 @@
 			"module": "poetry",
 			"args": [
 				"poe", "prompt_tune",
-				"--root", "../500songs-batch1/",
-				"--output", "../500songs-batch1/prompts/",
+				"--root", "../awel-dealership/",
+				"--output", "../awel-dealership/prompts/",
 				"--config",
-				"../500songs-batch1/settings.yaml",
+				"../awel-dealership/settings.yaml",
 				"--no-discover-entity-types"
 			]
 		}
