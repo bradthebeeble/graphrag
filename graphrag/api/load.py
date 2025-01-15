@@ -287,9 +287,9 @@ def load_data(
                 set_clause = ",\n                ".join(set_statements)
                 
                 # Create and execute the query for this batch
-                # covnert here to to snake_case. AI!
+                model_name_snake = ''.join(['_' + c.lower() if c.isupper() else c for c in model.__name__]).lstrip('_')
                 statement = f"""
-                    MERGE (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+                    MERGE (n:{model_name_snake} {{human_readable_id: value.human_readable_id}})
                     SET {set_clause}
                 """
                 
