@@ -231,7 +231,7 @@ def load_data(
                 if not records.records:
                     info(f"No {model.__name__} records found in database")
                     continue
-                    
+                # filter records for only where dirty is true or null. AI!
                 df = pd.DataFrame([dict(record["node"]) for record in records.records])
             
             except Exception as e:
@@ -281,7 +281,7 @@ def load_data(
                 # Create and execute the query for this batch
                 statement = f"""
                     MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
-                    WHERE n.dirty IS NULL OR n.dirty = true
+                    WHERE n.dirty IS NULL OR n.dirty = true 
                     SET {set_clause}
                 """
                 
