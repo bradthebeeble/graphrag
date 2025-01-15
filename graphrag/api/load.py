@@ -33,6 +33,7 @@ def get_all_models(module):
             camel_name = ''.join(word.capitalize() for word in model.__name__.split('_'))
             model.__name__ = camel_name
             
+    print(f'Found models: {[model.__name__ for model in models]}')
     return models
 
 
@@ -230,7 +231,7 @@ def load_data(
             return all_updated_records
             
         
-        for model in models:
+        for model in models: # convert model.__name__ from CamelCase to snake_case. AI!
             query = f"""
                 MATCH (n:{model.__name__})
                 RETURN n AS node
@@ -319,14 +320,14 @@ def load_data(
         # Filter out ListOf models
         dealership_models = [model for model in dealership_models if not model.__name__.startswith('ListOf')]
        
-        create_db_constraints()
-        import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
-        load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
-        load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
-        load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
-        if should_load_communities:
-            load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
-            load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
+        # create_db_constraints()
+        # import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
+        # load_text_units(dataframe_dict["create_final_text_units"][["id","text","n_tokens","document_ids"]])
+        # load_nodes(dataframe_dict["create_final_entities"][["title","type","description","human_readable_id","id","text_unit_ids"]])
+        # load_relationships(dataframe_dict["create_final_relationships"][["source","target","id","type","combined_degree","weight","human_readable_id","description","text_unit_ids"]])
+        # if should_load_communities:
+        #     load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
+        #     load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
         update_entites_with_properties(dealership_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
 
         return True
