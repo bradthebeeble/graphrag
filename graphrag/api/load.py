@@ -19,24 +19,13 @@ import inspect
 log = logging.getLogger(__name__)
 
 def get_all_models(module):
-    """Get all pydantic models from a module and convert any snake_case names to CamelCase."""
-    models = [
+    return [
         obj for name, obj in inspect.getmembers(module)
         if inspect.isclass(obj) 
         and issubclass(obj, BaseModel) 
         and obj != BaseModel
     ]
     
-    for model in models:
-        if '_' in model.__name__:
-            # Convert snake_case to CamelCase
-            camel_name = ''.join(word.capitalize() for word in model.__name__.split('_'))
-            model.__name__ = camel_name
-            
-    print(f'Found models: {[model.__name__ for model in models]}')
-    return models
-
-
 def _logger(logger: ProgressLogger):
     def info(msg: str, verbose: bool = False):
         log.info(msg)
@@ -232,10 +221,8 @@ def load_data(
             
         
         for model in models:
-            # Convert model name from CamelCase to snake_case for Neo4j
-            model_name = ''.join(['_' + c.lower() if c.isupper() else c for c in model.__name__]).lstrip('_')
             query = f"""
-                MATCH (n:{model_name})
+                MATCH (n:{model.__name__})
                 RETURN n AS node
             """
             try:
@@ -258,11 +245,15 @@ def load_data(
                 error("OpenAI API key not configured in LLM settings")
                 return pd.DataFrame()
                 
-            llm = ChatOpenAI(
-                model=config.llm.model,
-                api_key=SecretStr(openai_api_key),
-            )
-            structured_llm = llm.with_structured_output(getattr(dealership, f"ListOf{model.__name__}s"))
+            try:
+                llm = ChatOpenAI(
+                    model=config.llm.model,
+                    api_key=SecretStr(openai_api_key),
+                )
+                structured_llm = llm.with_structured_output(getattr(dealership, f"ListOf{model.__name__}s"))
+            except Exception as e:
+                info(f"Error initializing LLM: {e}")
+                continue
             
             # Process DataFrame in batches of 10
             batch_size = 35
@@ -280,6 +271,7 @@ def load_data(
                 
                 # Create the SET clause dynamically
                 fields = model.model_fields.keys()
+                # include a field set dirty set to false. AI!
                 set_statements = [
                     f"n.{field} = value.{field}"
                     for field in fields
@@ -287,9 +279,8 @@ def load_data(
                 set_clause = ",\n                ".join(set_statements)
                 
                 # Create and execute the query for this batch
-                model_name_snake = ''.join(['_' + c.lower() if c.isupper() else c for c in model.__name__]).lstrip('_')
                 statement = f"""
-                    MERGE (n:{model_name_snake} {{human_readable_id: value.human_readable_id}})
+                    MERGE (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
                     SET {set_clause}
                 """
                 
