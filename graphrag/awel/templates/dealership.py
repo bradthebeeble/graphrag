@@ -19,3 +19,16 @@ class Customer(BaseModel):
 
 class ListOfCustomers(BaseModel):
     items: List[Customer] = Field(description="A list of customers")
+
+class VehicleModel(BaseModel):
+    """A vehicle model offered by the dealership."""
+    id: int = Field(description="Auto-generated uuid for the vehicle model")
+    human_readable_id: int = Field(description="Human-readable id for the vehicle model. Echo it back from the input")
+    make: str = Field(description="The manufacturer of the vehicle")
+    model: str = Field(description="The model name of the vehicle")
+    trim: Optional[str] = Field(default=None, description="The trim level of the vehicle")
+    segment: Optional[str] = Field(default=None, description="The market segment of the vehicle (e.g., mid-size SUV)")
+    features: Optional[List[str]] = Field(default=None, description="List of notable features of the vehicle")
+
+class ListOfVehicleModels(BaseModel):
+    items: List[VehicleModel] = Field(description="A list of vehicle models")
