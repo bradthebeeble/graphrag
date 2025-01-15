@@ -279,9 +279,9 @@ def load_data(
                 set_clause = ",\n                ".join(set_statements)
                 
                 # Create and execute the query for this batch
-                # update statement to limit only for nodes where dirty = true or dirty is unset. AI!
                 statement = f"""
-                    MERGE (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+                    MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+                    WHERE n.dirty IS NULL OR n.dirty = true
                     SET {set_clause}
                 """
                 
