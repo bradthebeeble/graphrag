@@ -62,3 +62,15 @@ class DealershipVenue(BaseModel):
 
 class ListOfDealershipVenues(BaseModel):
     items: List[DealershipVenue] = Field(description="A list of dealership venues")
+
+class DealerNetwork(BaseModel):
+    """A network of dealerships operating under a common brand or region."""
+    id: int = Field(description="Auto-generated uuid for the dealer network")
+    human_readable_id: int = Field(description="Human-readable id for the dealer network. Echo it back from the input")
+    name: str = Field(description="The name of the dealer network")
+    region: Optional[str] = Field(default=None, description="The geographical region where the network operates")
+    specialization: Optional[str] = Field(default=None, description="Brand or service specialization of the network")
+    service_features: Optional[List[str]] = Field(default=None, description="Notable service features or specialties")
+
+class ListOfDealerNetworks(BaseModel):
+    items: List[DealerNetwork] = Field(description="A list of dealer networks")
