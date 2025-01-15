@@ -231,9 +231,11 @@ def load_data(
             return all_updated_records
             
         
-        for model in models: # convert model.__name__ from CamelCase to snake_case. AI!
+        for model in models:
+            # Convert model name from CamelCase to snake_case for Neo4j
+            model_name = ''.join(['_' + c.lower() if c.isupper() else c for c in model.__name__]).lstrip('_')
             query = f"""
-                MATCH (n:{model.__name__})
+                MATCH (n:{model_name})
                 RETURN n AS node
             """
             try:
