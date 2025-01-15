@@ -47,3 +47,18 @@ class CustomerReview(BaseModel):
 
 class ListOfCustomerReviews(BaseModel):
     items: List[CustomerReview] = Field(description="A list of customer reviews")
+
+class DealershipVenue(BaseModel):
+    """A physical dealership location."""
+    id: int = Field(description="Auto-generated uuid for the dealership venue")
+    human_readable_id: int = Field(description="Human-readable id for the dealership venue. Echo it back from the input")
+    city: str = Field(description="The city where the dealership is located")
+    company_name: str = Field(description="The name of the dealership company")
+    revenue_per_sqft: Optional[float] = Field(default=None, description="Revenue per square foot in USD")
+    annual_units_sold: Optional[int] = Field(default=None, description="Number of vehicles sold in a year")
+    year: Optional[int] = Field(default=None, description="The year for which the statistics are reported")
+    is_strategic_location: Optional[bool] = Field(default=None, description="Whether this is a strategic location")
+    notes: Optional[str] = Field(default=None, description="Additional notes about the venue")
+
+class ListOfDealershipVenues(BaseModel):
+    items: List[DealershipVenue] = Field(description="A list of dealership venues")
