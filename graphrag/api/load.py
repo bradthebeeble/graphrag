@@ -233,7 +233,8 @@ def load_data(
                     continue
                 # Convert records to DataFrame and filter for dirty/null records
                 df = pd.DataFrame([dict(record["node"]) for record in records.records])
-                df = df[df['dirty'].isna() | df['dirty'] == True] # add checl if ['diryt'] is not in df. AI!
+                if 'dirty' in df.columns:
+                    df = df[df['dirty'].isna() | df['dirty'] == True]
                 print(f"Found {len(df)} dirty {model.__name__} nodes")
             
             except Exception as e:
