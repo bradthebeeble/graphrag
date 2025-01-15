@@ -9,14 +9,16 @@ import logging
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 
-# Loading the music template
+# Loading the music and dealership templates
 import graphrag.awel.templates.music as music
+import graphrag.awel.templates.dealership as dealership
+
 import inspect
 
 
 log = logging.getLogger(__name__)
 
-def get_all_models(module):
+def get_all_models(module): # before returning convert any name of form A_B to a CamelCase. AI!
     return [
         obj for name, obj in inspect.getmembers(module)
         if inspect.isclass(obj) 
@@ -248,7 +250,7 @@ def load_data(
                 model=config.llm.model,
                 api_key=SecretStr(openai_api_key),
             )
-            structured_llm = llm.with_structured_output(getattr(music, f"ListOf{model.__name__}s"))
+            structured_llm = llm.with_structured_output(getattr(dealership, f"ListOf{model.__name__}s"))
             
             # Process DataFrame in batches of 10
             batch_size = 35
@@ -302,11 +304,11 @@ def load_data(
         driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
         driver.verify_connectivity()
         info("Neo4j driver initialized successfully.")
-        # Get all models from music.py
-        music_models = get_all_models(music)
+        # Get all models from dealership.py
+        dealership_models = get_all_models(dealership)
 
         # Filter out ListOf models
-        music_models = [model for model in music_models if not model.__name__.startswith('ListOf')]
+        dealership_models = [model for model in dealership_models if not model.__name__.startswith('ListOf')]
        
         create_db_constraints()
         import_documents(dataframe_dict["create_final_documents"][["id", "title"]])
@@ -316,7 +318,7 @@ def load_data(
         if should_load_communities:
             load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
             load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
-        # update_entites_with_properties(music_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
+        update_entites_with_properties(dealership_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
 
         return True
     except Exception as e:
