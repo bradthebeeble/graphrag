@@ -231,8 +231,9 @@ def load_data(
                 if not records.records:
                     info(f"No {model.__name__} records found in database")
                     continue
-                # filter records for only where dirty is true or null. AI!
+                # Convert records to DataFrame and filter for dirty/null records
                 df = pd.DataFrame([dict(record["node"]) for record in records.records])
+                df = df[df['dirty'].isna() | df['dirty'] == True]
             
             except Exception as e:
                 error(f"Error fetching records: {e}")
