@@ -74,3 +74,20 @@ class DealerNetwork(BaseModel):
 
 class ListOfDealerNetworks(BaseModel):
     items: List[DealerNetwork] = Field(description="A list of dealer networks")
+
+class Insight(BaseModel):
+    """An insight or analysis about the automotive industry or dealership operations."""
+    id: int = Field(description="Auto-generated uuid for the insight")
+    human_readable_id: int = Field(description="Human-readable id for the insight. Echo it back from the input")
+    title: str = Field(description="Title or summary of the insight")
+    description: str = Field(description="Detailed description of the insight")
+    category: str = Field(description="Category of the insight (e.g., Risk, Market Share, Industry Trend, Digital Transformation)")
+    year: Optional[int] = Field(default=None, description="The year the insight relates to")
+    region: Optional[str] = Field(default=None, description="Geographic region the insight pertains to")
+    market_share: Optional[float] = Field(default=None, description="Market share percentage if applicable")
+    risk_factors: Optional[List[str]] = Field(default=None, description="List of identified risk factors")
+    trends: Optional[List[str]] = Field(default=None, description="List of identified trends")
+    impact_areas: Optional[List[str]] = Field(default=None, description="Areas of business impacted by this insight")
+
+class ListOfInsights(BaseModel):
+    items: List[Insight] = Field(description="A list of insights")
