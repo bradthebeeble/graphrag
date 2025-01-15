@@ -18,13 +18,22 @@ import inspect
 
 log = logging.getLogger(__name__)
 
-def get_all_models(module): # before returning convert any name of form A_B to a CamelCase. AI!
-    return [
+def get_all_models(module):
+    """Get all pydantic models from a module and convert any snake_case names to CamelCase."""
+    models = [
         obj for name, obj in inspect.getmembers(module)
         if inspect.isclass(obj) 
         and issubclass(obj, BaseModel) 
         and obj != BaseModel
     ]
+    
+    for model in models:
+        if '_' in model.__name__:
+            # Convert snake_case to CamelCase
+            camel_name = ''.join(word.capitalize() for word in model.__name__.split('_'))
+            model.__name__ = camel_name
+            
+    return models
 
 
 def _logger(logger: ProgressLogger):
