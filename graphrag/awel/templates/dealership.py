@@ -106,3 +106,20 @@ class SalesMetric(BaseModel):
 
 class ListOfSalesMetrics(BaseModel):
     items: List[SalesMetric] = Field(description="A list of sales metrics")
+
+class VehicleCategory(BaseModel):
+    """A category or segment of vehicles."""
+    id: int = Field(description="Auto-generated uuid for the vehicle category")
+    human_readable_id: int = Field(description="Human-readable id for the vehicle category. Echo it back from the input")
+    name: str = Field(description="The name of the category (e.g., Luxury Sedans, Mid-size SUV)")
+    description: Optional[str] = Field(default=None, description="Detailed description of the category")
+    price_range_min: Optional[float] = Field(default=None, description="Minimum price range in USD")
+    price_range_max: Optional[float] = Field(default=None, description="Maximum price range in USD")
+    market_share: Optional[float] = Field(default=None, description="Market share percentage")
+    year_over_year_growth: Optional[float] = Field(default=None, description="Year over year growth percentage")
+    average_transaction_price: Optional[float] = Field(default=None, description="Average transaction price in USD")
+    trends: Optional[List[str]] = Field(default=None, description="List of current trends affecting this category")
+    year: Optional[int] = Field(default=None, description="Year for which the statistics are reported")
+
+class ListOfVehicleCategories(BaseModel):
+    items: List[VehicleCategory] = Field(description="A list of vehicle categories")
