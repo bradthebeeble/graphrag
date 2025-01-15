@@ -233,7 +233,8 @@ def load_data(
                     continue
                 # Convert records to DataFrame and filter for dirty/null records
                 df = pd.DataFrame([dict(record["node"]) for record in records.records])
-                df = df[df['dirty'].isna() | df['dirty'] == True]
+                df = df[df['dirty'].isna() | df['dirty'] == True] # add checl if ['diryt'] is not in df. AI!
+                print(f"Found {len(df)} dirty {model.__name__} nodes")
             
             except Exception as e:
                 error(f"Error fetching records: {e}")
@@ -245,52 +246,51 @@ def load_data(
             if not openai_api_key:
                 error("OpenAI API key not configured in LLM settings")
                 return pd.DataFrame()
-                
             try:
                 llm = ChatOpenAI(
                     model=config.llm.model,
                     api_key=SecretStr(openai_api_key),
                 )
                 structured_llm = llm.with_structured_output(getattr(dealership, f"ListOf{model.__name__}s"))
+                
+                
+                # Process DataFrame in batches of 10
+                batch_size = 35
+                total_records = len(df)
+                updated_records = 0
+                
+                for start_idx in range(0, total_records, batch_size):
+                    end_idx = min(start_idx + batch_size, total_records)
+                    batch_df = df.iloc[start_idx:end_idx]
+                    
+                    # Process batch through LLM
+                    list_of_items = structured_llm.invoke(batch_df.to_string())
+                    list_of_dicts = [vars(obj) for obj in list_of_items.items]
+                    df_batch_updated = pd.DataFrame(list_of_dicts)
+                    
+                    # Create the SET clause dynamically
+                    fields = model.model_fields.keys()
+                    set_statements = [
+                        f"n.{field} = value.{field}"
+                        for field in fields
+                    ]
+                    set_statements.append("n.dirty = false")
+                    set_clause = ",\n                ".join(set_statements)
+                    
+                    # Create and execute the query for this batch
+                    statement = f"""
+                        MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
+                        WHERE n.dirty IS NULL OR n.dirty = true 
+                        SET {set_clause}
+                    """
+                    
+                    batched_import(statement, df_batch_updated)
+                    updated_records += len(df_batch_updated)
+                    print(f"Processed batch {start_idx//batch_size + 1}, updated {updated_records}/{total_records} {model.__name__} nodes")
+                    all_updated_records = pd.concat([all_updated_records, df_batch_updated], ignore_index=True)
             except Exception as e:
                 info(f"Error initializing LLM: {e}")
                 continue
-            
-            # Process DataFrame in batches of 10
-            batch_size = 35
-            total_records = len(df)
-            updated_records = 0
-            
-            for start_idx in range(0, total_records, batch_size):
-                end_idx = min(start_idx + batch_size, total_records)
-                batch_df = df.iloc[start_idx:end_idx]
-                
-                # Process batch through LLM
-                list_of_items = structured_llm.invoke(batch_df.to_string())
-                list_of_dicts = [vars(obj) for obj in list_of_items.items]
-                df_batch_updated = pd.DataFrame(list_of_dicts)
-                
-                # Create the SET clause dynamically
-                fields = model.model_fields.keys()
-                set_statements = [
-                    f"n.{field} = value.{field}"
-                    for field in fields
-                ]
-                set_statements.append("n.dirty = false")
-                set_clause = ",\n                ".join(set_statements)
-                
-                # Create and execute the query for this batch
-                statement = f"""
-                    MATCH (n:{model.__name__} {{human_readable_id: value.human_readable_id}})
-                    WHERE n.dirty IS NULL OR n.dirty = true 
-                    SET {set_clause}
-                """
-                
-                batched_import(statement, df_batch_updated)
-                updated_records += len(df_batch_updated)
-                print(f"Processed batch {start_idx//batch_size + 1}, updated {updated_records}/{total_records} {model.__name__} nodes")
-                all_updated_records = pd.concat([all_updated_records, df_batch_updated], ignore_index=True)
-
 
     if progress_logger is None:
             progress_logger = LoggerFactory().create_logger(LoggerType(LoggerType.RICH))
