@@ -91,3 +91,18 @@ class Insight(BaseModel):
 
 class ListOfInsights(BaseModel):
     items: List[Insight] = Field(description="A list of insights")
+
+class SalesMetric(BaseModel):
+    """A sales performance metric for dealership operations."""
+    id: int = Field(description="Auto-generated uuid for the sales metric")
+    human_readable_id: int = Field(description="Human-readable id for the sales metric. Echo it back from the input")
+    metric_name: str = Field(description="Name of the metric being measured")
+    time_period: str = Field(description="Time period for the metric (e.g., Q3 2024)")
+    value: float = Field(description="Numerical value of the metric")
+    unit: str = Field(description="Unit of measurement (e.g., units, USD, percentage)")
+    category: str = Field(description="Category of metric (e.g., Sales Volume, Customer Satisfaction, Market Size)")
+    is_forecast: Optional[bool] = Field(default=False, description="Whether this metric is a forecast")
+    notes: Optional[str] = Field(default=None, description="Additional context or notes about the metric")
+
+class ListOfSalesMetrics(BaseModel):
+    items: List[SalesMetric] = Field(description="A list of sales metrics")
