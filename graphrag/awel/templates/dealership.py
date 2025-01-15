@@ -32,3 +32,18 @@ class VehicleModel(BaseModel):
 
 class ListOfVehicleModels(BaseModel):
     items: List[VehicleModel] = Field(description="A list of vehicle models")
+
+class CustomerReview(BaseModel):
+    """A customer review of a vehicle."""
+    id: int = Field(description="Auto-generated uuid for the review")
+    human_readable_id: int = Field(description="Human-readable id for the review. Echo it back from the input")
+    rating: float = Field(description="The rating given by the customer (out of 5.0)")
+    car_make: str = Field(description="The make of the reviewed vehicle")
+    car_model: str = Field(description="The model of the reviewed vehicle")
+    car_trim: str = Field(description="The trim level of the reviewed vehicle")
+    pros: Optional[List[str]] = Field(default=None, description="List of positive aspects mentioned in the review")
+    cons: Optional[List[str]] = Field(default=None, description="List of negative aspects mentioned in the review")
+    sentiment: str = Field(description="Overall sentiment of the review (positive|negative|indifferent)")
+
+class ListOfCustomerReviews(BaseModel):
+    items: List[CustomerReview] = Field(description="A list of customer reviews")
