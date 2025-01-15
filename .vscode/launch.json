@@ -5,6 +5,14 @@
         "PATH": "/Users/asafatzmon/dev/graphrag/.venv/bin:${env:PATH}",
         "PROJECT_ROOT": "../awel-dealership/"
     },
+	"inputs": [
+		{
+			"id": "PROJECT_ROOT",
+			"type": "promptString",
+			"description": "Enter the path to the project root directory",
+			"default": "../awel-dealership/"
+		}
+	],
 	"configurations": [
 		{
 			"name": "Initializer",
@@ -13,7 +21,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "init",
-				"--root", "${env:PROJECT_ROOT}"
+				"--root", "${input:PROJECT_ROOT}"
 			],
 		},
 		{
@@ -23,7 +31,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "index",
-				"--root", "${env:PROJECT_ROOT}"
+				"--root", "${input:PROJECT_ROOT}"
 			],
 		},
 		{
@@ -33,7 +41,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "load",
-				"--root", "${env:PROJECT_ROOT}",
+				"--root", "${input:PROJECT_ROOT}",
 				"--load-communities"
 			],
 		},
@@ -44,9 +52,10 @@
 			"module": "poetry",
 			"args": [
 				"poe", "query",
-				"--root", "${env:PROJECT_ROOT}",
+				"--root", "${input:PROJECT_ROOT}",
 				"--method", "local",
-				"--query", "Find data on our Janurary vehicles sales at Cleveland: Historical monthly sales for the past six months,competitor pricing on similar models,a local market trend indicator for luxury cars, and a brief overview of top complaints or negative feedback from our customers",
+				"--query", "Find data on our high-end sedans at Boston venue: Historical monthly sales for the past six months (Jul - Dec) ,competitor pricing on similar models,a local market trend indicator for luxury cars, and a brief overview of top complaints or negative feedback from our customers.",
+				"--response-type", "4-5 paragraphs"
 			]
 		},
 		{
@@ -56,11 +65,11 @@
 			"module": "poetry",
 			"args": [
 				"poe", "prompt_tune",
-				"--root", "${env:PROJECT_ROOT}",
-				"--output", "${env:PROJECT_ROOT}prompts/",
+				"--root", "${input:PROJECT_ROOT}",
+				"--output", "${input:PROJECT_ROOT}prompts/",
 				"--config",
-				"${env:PROJECT_ROOT}settings.yaml",
-				"--no-discover-entity-types"
+				"${input:PROJECT_ROOT}settings.yaml",
+				"--no-discover-entity-types",
 			]
 		}
 	]

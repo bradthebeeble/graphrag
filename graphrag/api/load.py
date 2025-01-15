@@ -316,7 +316,7 @@ def load_data(
         if should_load_communities:
             load_communities(dataframe_dict["create_final_communities"][["id","level","title","text_unit_ids","relationship_ids", "community"]])
             load_communities_reports(dataframe_dict["create_final_community_reports"][["id","community","level","title","summary", "findings","rank","rank_explanation","full_content"]])
-        update_entites_with_properties(music_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
+        # update_entites_with_properties(music_models, dataframe_dict["create_final_entities"][["id","human_readable_id", "description"]])
 
         return True
     except Exception as e:

@@ -65,7 +65,7 @@ def load_cli(
     logger: LoggerType,
     config_filepath: Path | None,
     output_dir: Path | None,
-    load_communities: bool = False
+    load_communities: bool = True
 ):
     """Run the pipeline with the given config."""
     config = load_config(root_dir, config_filepath)
