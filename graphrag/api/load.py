@@ -271,11 +271,11 @@ def load_data(
                 
                 # Create the SET clause dynamically
                 fields = model.model_fields.keys()
-                # include a field set dirty set to false. AI!
                 set_statements = [
                     f"n.{field} = value.{field}"
                     for field in fields
                 ]
+                set_statements.append("n.dirty = false")
                 set_clause = ",\n                ".join(set_statements)
                 
                 # Create and execute the query for this batch
