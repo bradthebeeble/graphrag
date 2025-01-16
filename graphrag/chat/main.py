@@ -109,8 +109,9 @@ def call_model(state: ExtendedMessagesState):
         
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
+    history = []
     if is_tool_message:
-        # iterate over all messages of type HumanMessages in state["messages"] and put them in a history var of list[str]. AI!
+        history = [msg.content for msg in state["messages"] if isinstance(msg, HumanMessage)]
         console.print("Call Candidate")
     return {
         "next_questions_candidates": ["What is my name?", "What is my role"]
