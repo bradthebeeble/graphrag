@@ -49,7 +49,7 @@ llm_with_tools = None
 def call_model(state: MessagesState):
     global llm_with_tools, openai_api_key
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
-    response_messages = BaseMessage[] # turn into a list of BaseMessage. AI!
+    response_messages: list[BaseMessage] = []
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
