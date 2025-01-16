@@ -123,7 +123,7 @@ def call_candidate_fup_questions(state: ExtendedMessagesState):
                 query=history,
             )
     return {
-        "next_questions_candidates": next_questions_candidates if 'next_questions_candidates' in locals() else []
+        "next_questions_candidates": next_questions_candidates
     }
 def route_tools(
     state: ExtendedMessagesState,
@@ -205,6 +205,8 @@ def run_chat_loop(root_dir: Path,
                     return cleaned
                 markdown = clean_markdown(ai_msg['messages'][-1].content)
                 state = app.get_state(graph_config)
+                if state.values["next_questions_candidates"] is not null: # fix. AI!
+
                 console.print(Markdown(markdown))
 
 
