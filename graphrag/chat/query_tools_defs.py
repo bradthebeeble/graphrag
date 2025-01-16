@@ -20,7 +20,9 @@ class BasicToolNode:
             message = messages[-1]
         else:
             raise ValueError("No message found in input")
-        # set global vars _config_filepath and _root_dir with respective state (inputs.get) vars. AI!
+        global _config_filepath, _root_dir
+        _config_filepath = inputs.get("config_filepath")
+        _root_dir = inputs.get("root_dir")
         outputs = []
         for tool_call in message.tool_calls:
             tool_result = self.tools_by_name[tool_call["name"]].invoke(
