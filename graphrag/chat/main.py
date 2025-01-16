@@ -52,7 +52,7 @@ def call_model(state: MessagesState):
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
-        response: AIMessage = llm_with_tools.invoke(messages) # convert to AIMessage.AI!
+        response: AIMessage = llm_with_tools.invoke(messages)  # convert to AIMessage
         print(response.tool_calls)
         return {"messages": response}
 
@@ -91,7 +91,7 @@ def run_chat_loop():
                     },
                     config={"configurable": {"thread_id": "1"}},
                 )
-                print(f"AI: {ai_msg["messages"][-1].content}")
+                print(f"AI: {ai_msg['messages'][-1].content}")
 
         except KeyboardInterrupt:
             print("\nGoodbye!")
