@@ -68,7 +68,7 @@ def run_chat_loop(
                 break
 
             if user_input:
-                # create an effect of running dots while the invoke function is running. Then print the AI response.
+                # create an effect of running dots while the invoke function is running. Then print the AI response. AI!
                 ai_msg = chain.invoke(
                     {
                         "messages": [
