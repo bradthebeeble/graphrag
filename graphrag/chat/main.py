@@ -15,9 +15,13 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Base
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END, StateGraph
-from langgraph.prebuilt import ToolNode
-
+from langchain_core.runnables.config import RunnableConfig
 from typing import TypedDict
+
+from rich.console import Console
+from rich.markdown import Markdown
+from graphrag.chat.awel_logo import AWEL_LOGO
+
 class ExtendedMessagesState(TypedDict):
     config_filepath: Path | None
     root_dir: Path | None
@@ -25,6 +29,7 @@ class ExtendedMessagesState(TypedDict):
     next_questions_candidates: list[str]
 
 log = logging.getLogger(__name__)
+console = Console()
 
 
 def _logger(logger: ProgressLogger):
@@ -54,6 +59,7 @@ openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
 llm_with_tools = None
+THREAD_ID = 1
 
 # Tools call node
 def call_tools(state: ExtendedMessagesState):
@@ -101,7 +107,12 @@ def call_model(state: ExtendedMessagesState):
             "root_dir" : _root_dir
             }
         
-
+def call_candidate_fup_questions(state: ExtendedMessagesState):
+    # check state["messages"] whether the next to last messages is of type ToolMessage and assign to a bool. AI!
+    console.print("Call Candidate")
+    return {
+        "next_questions_candidates": ["What is my name?", "What is my role"]
+    }
 def route_tools(
     state: ExtendedMessagesState,
 ):
@@ -120,16 +131,22 @@ def route_tools(
 # Define the node and edge
 workflow.add_node("model", call_model)
 workflow.add_node("tools", call_tools)
+workflow.add_node("candidate_fup_questions", call_candidate_fup_questions)
 workflow.add_edge(START, "model")
 workflow.add_conditional_edges(
     "model",
     route_tools,
-    {"tools": "tools", END: END},
+    {"tools": "tools", END: "candidate_fup_questions"},
 )
+workflow.add_edge("tools", "model")
+
+workflow.add_edge("candidate_fup_questions", END)
 
 # Add simple in-memory checkpointer
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
+
+
 
 def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
@@ -139,7 +156,10 @@ def run_chat_loop(root_dir: Path,
     _root_dir = root_dir
     llm = ChatOpenAI(api_key=SecretStr(str(openai_api_key)), model=config.llm.model)
     llm_with_tools = llm.bind_tools([local_query, global_query])
-
+    graph_config = RunnableConfig({
+        "configurable": 
+            {"thread_id": THREAD_ID}
+            })
     print("\nEnter your messages (type /exit to quit):")
 
     while True:
@@ -159,9 +179,22 @@ def run_chat_loop(root_dir: Path,
                             ),
                         ],
                     },
-                    config={"configurable": {"thread_id": "1"}},
+                    config=graph_config,
                 )
-                print(f"\nAI: {ai_msg['messages'][-1].content}")
+                console.print("AI:")
+                import re
+                def clean_markdown(raw_markdown):
+                    # Remove surrounding quotes
+                    cleaned = raw_markdown.strip('"').strip("'")
+                    # Replace literal "\n" with actual newlines
+                    cleaned = cleaned.replace("\\n", "\n")
+                    # Optionally, normalize whitespace
+                    cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
+                    return cleaned
+                markdown = clean_markdown(ai_msg['messages'][-1].content)
+                state = app.get_state(graph_config)
+                console.print(Markdown(markdown))
+
 
         except KeyboardInterrupt:
             print("\nGoodbye!")
@@ -183,4 +216,5 @@ def chat_cli(
         error("OpenAI API key not configured in LLM settings")
     else:
         success("Starting chat")
+        console.print(AWEL_LOGO)
         run_chat_loop(root_dir, config_filepath)
