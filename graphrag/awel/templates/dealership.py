@@ -33,7 +33,7 @@ class VehicleModel(BaseModel):
 class ListOfVehicleModels(BaseModel):
     items: List[VehicleModel] = Field(description="A list of vehicle models")
 
-class CustomerReview(BaseModel):
+class CustomerReviewOfVehicle(BaseModel):
     """A customer review of a vehicle."""
     id: int = Field(description="Auto-generated uuid for the review")
     human_readable_id: int = Field(description="Human-readable id for the review. Echo it back from the input")
@@ -45,8 +45,8 @@ class CustomerReview(BaseModel):
     cons: Optional[List[str]] = Field(default=None, description="List of negative aspects mentioned in the review")
     sentiment: str = Field(description="Overall sentiment of the review (positive|negative|indifferent)")
 
-class ListOfCustomerReviews(BaseModel):
-    items: List[CustomerReview] = Field(description="A list of customer reviews")
+class ListOfCustomerReviewOfVehicles(BaseModel):
+    items: List[CustomerReviewOfVehicle] = Field(description="A list of customer reviews")
 
 class DealershipVenue(BaseModel):
     """A physical dealership location."""
@@ -101,7 +101,6 @@ class SalesMetric(BaseModel):
     value: float = Field(description="Numerical value of the metric")
     unit: str = Field(description="Unit of measurement (e.g., units, USD, percentage)")
     category: str = Field(description="Category of metric (e.g., Sales Volume, Customer Satisfaction, Market Size)")
-    is_forecast: Optional[bool] = Field(default=False, description="Whether this metric is a forecast")
     notes: Optional[str] = Field(default=None, description="Additional context or notes about the metric")
 
 class ListOfSalesMetrics(BaseModel):
@@ -121,5 +120,19 @@ class VehicleCategory(BaseModel):
     trends: Optional[List[str]] = Field(default=None, description="List of current trends affecting this category")
     year: Optional[int] = Field(default=None, description="Year for which the statistics are reported")
 
-class ListOfVehicleCategories(BaseModel):
+class ListOfVehicleCategorys(BaseModel): # TODO: move to plurals lib
     items: List[VehicleCategory] = Field(description="A list of vehicle categories")
+
+class MonthYear(BaseModel):
+    """A month of the year."""
+    id: int = Field(description="Auto-generated uuid for the month")
+    human_readable_id: int = Field(description="Human-readable id for the month. Echo it back from the input")
+    month: str = Field(description="The name of the month")
+    year: int = Field(description="The year the month belongs to")
+    sales_volume: int = Field(description="Total sales volume for the month")
+    market_share: float = Field(description="Market share percentage for the month")
+    average_transaction_price: float = Field(description="Average transaction price for the month")
+    year_over_year_growth: float = Field(description="Year over year growth percentage for the month")
+
+class ListOfMonthYears(BaseModel):
+    items: List[MonthYear] = Field(description="A list of months of the year")
