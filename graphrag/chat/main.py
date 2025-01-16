@@ -108,8 +108,8 @@ def call_model(state: ExtendedMessagesState):
             }
         
 def call_candidate_fup_questions(state: ExtendedMessagesState):
-    # check state["messages"] whether the next to last messages is of type ToolMessage and assign to a bool. AI!
-    console.print("Call Candidate")
+    is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
+    console.print(f"Call Candidate - Is ToolMessage: {is_tool_message}")
     return {
         "next_questions_candidates": ["What is my name?", "What is my role"]
     }
