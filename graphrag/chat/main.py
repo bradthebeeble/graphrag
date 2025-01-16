@@ -16,6 +16,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
 from typing import TypedDict
 
+# make this class extend MessagesState, AI!
 class ExtendedMessagesState(TypedDict):
     messages: list[BaseMessage]
     next_questions_candidates: list[str]
