@@ -12,6 +12,7 @@ from typing import Annotated
 
 import typer
 
+from graphrag.chat.main import chat_cli
 from graphrag.logger.types import LoggerType
 from graphrag.prompt_tune.defaults import (
     MAX_TOKEN_COUNT,
@@ -275,7 +276,7 @@ def _load_cli(
     """Build a knowledge graph index."""
     from graphrag.cli.load import load_cli
 
-    laoded = load_cli(
+    loaded = load_cli(
         root_dir=root,
         verbose=verbose,
         logger=LoggerType(logger),
@@ -388,6 +389,39 @@ def _prompt_tune_cli(
         k=k,
         min_examples_required=min_examples_required,
     )
+
+@app.command("chat")
+def _chat_cli(
+    root: Annotated[
+        Path,
+        typer.Option(
+            help="The project root directory.",
+            exists=True,
+            dir_okay=True,
+            writable=True,
+            resolve_path=True,
+            autocompletion=path_autocomplete(
+                file_okay=False, dir_okay=True, writable=True, match_wildcard="*"
+            ),
+        ),
+    ] = Path(),  # set default to current directory
+    config: Annotated[
+        Path | None,
+        typer.Option(
+            help="The configuration to use.",
+            exists=True,
+            file_okay=True,
+            readable=True,
+            autocompletion=path_autocomplete(
+                file_okay=True, dir_okay=False, match_wildcard="*"
+            ),
+        ),
+    ] = None,
+):
+    """Run the top-level Chat logic"""
+    print("****** WELCOME TO THE AWEL DEMO APP ******")
+    chat_cli(root_dir=root, config_filepath=config)
+
 
 
 @app.command("query")

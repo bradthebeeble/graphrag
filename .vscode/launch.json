@@ -71,6 +71,18 @@
 				"${input:PROJECT_ROOT}settings.yaml",
 				"--no-discover-entity-types",
 			]
+		},
+		{
+			"name" : "Chat",
+			"type": "debugpy",
+			"request": "launch",
+			"module": "poetry",
+			"args": [
+				"poe", "chat",
+				"--root", "${input:PROJECT_ROOT}",
+				"--config",
+				"${input:PROJECT_ROOT}settings.yaml",
+			]
 		}
 	]
 }

@@ -147,6 +147,7 @@ init = "python -m graphrag init"
 query = "python -m graphrag query"
 generate = "python -m graphrag generate"
 prompt_tune = "python -m graphrag prompt-tune"
+chat = "python -m graphrag chat"
 # Pass in a test pattern
 test_only = "pytest -s -k"
 serve_docs = "mkdocs serve"

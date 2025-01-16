@@ -10,6 +10,8 @@ from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import START, MessagesState, StateGraph
 
 log = logging.getLogger(__name__)
 
@@ -35,27 +37,34 @@ def _logger(logger: ProgressLogger):
 progress_logger: ProgressLogger | None = LoggerFactory().create_logger(LoggerType(LoggerType.NONE))
 info, error, success = _logger(progress_logger)
 
+workflow = StateGraph(state_schema=MessagesState)
 SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation."
+openai_api_key: str = ""
+config: GraphRagConfig  = GraphRagConfig()
+llm: ChatOpenAI | None = None
 
-def run_chat_loop(
-    openai_api_key: str,
-    config: GraphRagConfig,
-):
+# Define the function that calls the model
+def call_model(state: MessagesState):
+    global llm, openai_api_key
+    messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
+    if llm is None:
+        error("OpenAI API key not configured in LLM settings")
+    else:
+        response = llm.invoke(messages)
+        return {"messages": response}
+
+# Define the node and edge
+workflow.add_node("model", call_model)
+workflow.add_edge(START, "model")
+
+# Add simple in-memory checkpointer
+memory = MemorySaver()
+app = workflow.compile(checkpointer=memory)
+
+def run_chat_loop():
     """Run an interactive chat loop that echoes user input."""
-    llm = ChatOpenAI(
-        model=config.llm.model,
-        api_key=SecretStr(openai_api_key),
-    )
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            SystemMessage(
-                content=SYSTEM_PROMPT,
-            ),
-            MessagesPlaceholder(variable_name="messages"),
-        ]
-    )
-    chain = prompt | llm
+    global llm, openai_api_key
+    llm = ChatOpenAI(api_key=SecretStr(openai_api_key), model=config.llm.model)
 
     print("\nEnter your messages (type /exit to quit):")
 
@@ -68,17 +77,17 @@ def run_chat_loop(
                 break
 
             if user_input:
-                # create an effect of running dots while the invoke function is running. Then print the AI response. AI!
-                ai_msg = chain.invoke(
+                ai_msg = app.invoke(
                     {
                         "messages": [
                             HumanMessage(
                                 content=user_input
                             ),
                         ],
-                    }
+                    },
+                    config={"configurable": {"thread_id": "1"}},
                 )
-                print(f"AI: {ai_msg.content}")
+                print(f"AI: {ai_msg["messages"][-1].content}")
 
         except KeyboardInterrupt:
             print("\nGoodbye!")
@@ -91,6 +100,7 @@ def chat_cli(
     root_dir: Path,
     config_filepath: Path | None,
 ):
+    global openai_api_key
     """Run the pipeline with the given config."""
     config = load_config(root_dir, config_filepath)
 
@@ -99,4 +109,4 @@ def chat_cli(
         error("OpenAI API key not configured in LLM settings")
     else:
         success("Starting chat")
-        run_chat_loop(openai_api_key, config)
+        run_chat_loop()
