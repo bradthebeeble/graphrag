@@ -1,7 +1,7 @@
-from typing import cast
+from typing import Annotated, cast
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
-from graphrag.chat.query_tools_defs import global_query, local_query
+from graphrag.chat.query_tools_defs import BasicToolNode, global_query, local_query
 from graphrag.config.load_config import load_config
 from pathlib import Path
 from graphrag.config.models.graph_rag_config import GraphRagConfig
@@ -11,12 +11,14 @@ import logging
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, StateGraph, MessagesState
+from langgraph.graph.message import add_messages
+from langgraph.graph import START, END, StateGraph
 from typing import TypedDict
-class ExtendedMessagesState(MessagesState):
-    messages: list[BaseMessage]
+class ExtendedMessagesState(TypedDict):
+    config_filepath: Path
+    root_dir: Path
+    messages: Annotated[list, add_messages]
     next_questions_candidates: list[str]
 
 log = logging.getLogger(__name__)
@@ -55,11 +57,13 @@ _root_dir = None
 # Define the function that calls the model
 def call_model(state: ExtendedMessagesState):
     global llm_with_tools, openai_api_key, _config_filepath, _root_dir
+    # set state config_filepath and root_dir with the global vars. AI!
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response_messages: list[BaseMessage] = []
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
+        return {"messages": [llm_with_tools.invoke(messages)]}
         response = cast(AIMessage, llm_with_tools.invoke(messages))
         if (len(response.tool_calls) > 0 ):
             response_messages.append(response)
@@ -81,9 +85,31 @@ def call_model(state: ExtendedMessagesState):
         response_messages.append(response)
         return {"messages": response_messages}
 
+def route_tools(
+    state: ExtendedMessagesState,
+):
+    """
+    Use in the conditional_edge to route to the ToolNode if the last message
+    has tool calls. Otherwise, route to the end.
+    """
+    if messages := state.get("messages", []):
+        ai_message = messages[-1]
+    else:
+        raise ValueError(f"No messages found in input state to tool_edge: {state}")
+    if hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0:
+        return "tools"
+    return END
+
 # Define the node and edge
 workflow.add_node("model", call_model)
+tool_node = BasicToolNode(tools=[local_query, global_query])
+workflow.add_node("tools", tool_node)
 workflow.add_edge(START, "model")
+workflow.add_conditional_edges(
+    "model",
+    route_tools,
+    {"tools": "tools", END: END},
+)
 
 # Add simple in-memory checkpointer
 memory = MemorySaver()
