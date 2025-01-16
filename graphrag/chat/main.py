@@ -66,7 +66,8 @@ def call_tools(state: ExtendedMessagesState):
             selected_tool = tools_by_name[tool_call["name"].lower()]
             tool_call["args"].update({"config_filepath": state["config_filepath"], "root_dir": state["root_dir"]})
             tool_msg = selected_tool.invoke(tool_call["args"])
-            # remove config_filepath and root_dir from args message. AI!
+            tool_call["args"].pop("config_filepath", None)
+            tool_call["args"].pop("root_dir", None)
             output_messages.append(
                 ToolMessage(
                     content=json.dumps(tool_msg),
