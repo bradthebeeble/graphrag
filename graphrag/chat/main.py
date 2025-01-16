@@ -1,7 +1,8 @@
+import json
 from typing import Annotated, cast
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
-from graphrag.chat.query_tools_defs import BasicToolNode, global_query, local_query
+from graphrag.chat.query_tools_defs import  global_query, local_query
 from graphrag.config.load_config import load_config
 from pathlib import Path
 from graphrag.config.models.graph_rag_config import GraphRagConfig
@@ -10,14 +11,16 @@ import logging
 
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage, ToolMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.message import add_messages
 from langgraph.graph import START, END, StateGraph
+from langgraph.prebuilt import ToolNode
+
 from typing import TypedDict
 class ExtendedMessagesState(TypedDict):
-    config_filepath: Path
-    root_dir: Path
+    config_filepath: Path | None
+    root_dir: Path | None
     messages: Annotated[list, add_messages]
     next_questions_candidates: list[str]
 
@@ -51,40 +54,52 @@ openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
 llm_with_tools = None
-_config_filepath = None
-_root_dir = None
 
+# Tools call node
+def call_tools(state: ExtendedMessagesState):
+    tools_by_name = {"local_query": local_query, "global_query": global_query}
+    messages = state["messages"]
+    last_message = messages[-1] 
+    output_messages = []
+    for tool_call in last_message.tool_calls:
+        try:
+            selected_tool = tools_by_name[tool_call["name"].lower()]
+            tool_call["args"].update({"config_filepath": state["config_filepath"], "root_dir": state["root_dir"]})
+            tool_msg = selected_tool.invoke(tool_call["args"])
+            # remove config_filepath and root_dir from args message. AI!
+            output_messages.append(
+                ToolMessage(
+                    content=json.dumps(tool_msg),
+                    name=tool_call["name"],
+                    tool_call_id=tool_call["id"],
+                )
+            )
+        except Exception as e:
+            # Return the error if the tool call fails
+            output_messages.append(
+                ToolMessage(
+                    content="",
+                    name=tool_call["name"],
+                    tool_call_id=tool_call["id"],
+                    additional_kwargs={"error": e},
+                )
+            )
+            
+    return {"messages": output_messages}
 # Define the function that calls the model
 def call_model(state: ExtendedMessagesState):
     global llm_with_tools, openai_api_key, _config_filepath, _root_dir
-    state["config_filepath"] = _config_filepath
-    state["root_dir"] = _root_dir
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response_messages: list[BaseMessage] = []
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
-        return {"messages": [llm_with_tools.invoke(messages)]}
-        response = cast(AIMessage, llm_with_tools.invoke(messages))
-        if (len(response.tool_calls) > 0 ):
-            response_messages.append(response)
-            for tool_call in response.tool_calls:
-                selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
-                tool_call["args"].update({"config_filepath": _config_filepath, "root_dir": _root_dir})
-                tool_msg = selected_tool.invoke(tool_call)
-                response_messages.append(tool_msg)
-            
-            # Remove 'config_filepath' and 'root_dir' from each tool_call's args in response_messages
-            for msg in response_messages:
-                if isinstance(msg, AIMessage) and hasattr(msg, 'tool_calls'):
-                    for tool_call in msg.tool_calls:
-                        tool_call["args"].pop("config_filepath", None)
-                        tool_call["args"].pop("root_dir", None)
-
-            messages_thread = messages + response_messages
-            response = llm_with_tools.invoke(messages_thread)
-        response_messages.append(response)
-        return {"messages": response_messages}
+        return {
+            "messages": [llm_with_tools.invoke(messages)],
+            "config_filepath" : _config_filepath,
+            "root_dir" : _root_dir
+            }
+        
 
 def route_tools(
     state: ExtendedMessagesState,
@@ -103,8 +118,7 @@ def route_tools(
 
 # Define the node and edge
 workflow.add_node("model", call_model)
-tool_node = BasicToolNode(tools=[local_query, global_query])
-workflow.add_node("tools", tool_node)
+workflow.add_node("tools", call_tools)
 workflow.add_edge(START, "model")
 workflow.add_conditional_edges(
     "model",
