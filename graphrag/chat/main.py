@@ -123,7 +123,7 @@ def call_candidate_fup_questions(state: ExtendedMessagesState):
                 query=history,
             )
     return {
-        "next_questions_candidates": next_questions_candidates if 'next_questions_candidates' in locals() else []
+        "next_questions_candidates": next_questions_candidates # fix, possibly unbound. AI!
     }
 def route_tools(
     state: ExtendedMessagesState,
