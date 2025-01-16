@@ -60,7 +60,8 @@ def call_model(state: MessagesState):
                 selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
                 tool_msg = selected_tool.invoke(tool_call)
                 response_messages.append(tool_msg)
-            response = llm_with_tools.invoke(response_messages) # concat messages and response_messages. AI!
+            response_messages = messages + response_messages
+            response = llm_with_tools.invoke(response_messages)
         response_messages.append(response)
         return {"messages": response_messages}
 
