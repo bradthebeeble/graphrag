@@ -64,4 +64,4 @@ def chat_cli(
         error("OpenAI API key not configured in LLM settings")
     else:
         success("Starting chat")
-        # create an interactive loop where a user writes a prompt in the CLI and the program for now just echoes the message back. Exit on "/exit". Do it in a speerate function in this same file. AI!
+        run_chat_loop()
