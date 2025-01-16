@@ -58,8 +58,8 @@ def call_model(state: MessagesState):
         if (len(response.tool_calls) > 0 ):
             response_messages.append(response)
             for tool_call in response.tool_calls:
-                # update the line below; it shold only use the query arg in the tool_call["name"] and append it two local args. config and root based on config_filepath and root_dir local values. AI!
                 selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
+                tool_call["args"].update({"config": config, "root": root_dir})
                 tool_msg = selected_tool.invoke(tool_call)
                 response_messages.append(tool_msg)
             response = llm_with_tools.invoke(messages +  response_messages)
