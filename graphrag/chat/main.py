@@ -3,6 +3,7 @@ from typing import Annotated, cast
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 from graphrag.chat.query_tools_defs import  global_query, local_query
+from graphrag.cli.query import run_question_generator
 from graphrag.config.load_config import load_config
 from pathlib import Path
 from graphrag.config.models.graph_rag_config import GraphRagConfig
@@ -24,7 +25,7 @@ from graphrag.chat.awel_logo import AWEL_LOGO
 
 class ExtendedMessagesState(TypedDict):
     config_filepath: Path | None
-    root_dir: Path | None
+    root_dir: Path 
     messages: Annotated[list, add_messages]
     next_questions_candidates: list[str]
 
@@ -111,10 +112,18 @@ def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
     history = []
     if is_tool_message:
-        history = [msg.content for msg in state["messages"] if isinstance(msg, HumanMessage)]
-        console.print("Call Candidate")
+        history: list[str] = cast(list[str],[msg.content for msg in state["messages"] if isinstance(msg, HumanMessage)])
+        config_filepath = state["config_filepath"]
+        root_dir=state["root_dir"]
+        next_questions_candidates = run_question_generator(
+                config_filepath,
+                data_dir=None,
+                root_dir=root_dir,
+                community_level=2,
+                query=history,
+            )
     return {
-        "next_questions_candidates": ["What is my name?", "What is my role"]
+        "next_questions_candidates": next_questions_candidates # if unbound , defaults to []. AI!
     }
 def route_tools(
     state: ExtendedMessagesState,
