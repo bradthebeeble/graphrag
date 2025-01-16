@@ -13,11 +13,9 @@ from graphrag.logger.types import LoggerType
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, StateGraph
+from langgraph.graph import START, StateGraph, MessagesState
 from typing import TypedDict
-
-# make this class extend MessagesState, AI!
-class ExtendedMessagesState(TypedDict):
+class ExtendedMessagesState(MessagesState):
     messages: list[BaseMessage]
     next_questions_candidates: list[str]
 
