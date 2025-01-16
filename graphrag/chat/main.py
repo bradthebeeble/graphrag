@@ -49,11 +49,18 @@ llm_with_tools = None
 def call_model(state: MessagesState):
     global llm_with_tools, openai_api_key
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
+    response_messages = BaseMessage[] # turn into a list of BaseMessage. AI!
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
-        response: AIMessage = llm_with_tools.invoke(messages)
-        print(response.tool_calls)
+        response = llm_with_tools.invoke(messages)
+        if (len(response.tool_calls) > 0 ):
+            messages.append(response)
+            for tool_call in response.tool_calls:
+                selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
+                tool_msg = selected_tool.invoke(tool_call)
+                messages.append(tool_msg)
+            response = llm_with_tools.invoke(messages)
         return {"messages": response}
 
 # Define the node and edge
