@@ -1,5 +1,6 @@
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
+from graphrag.chat.query_tools_defs import global_query, local_query
 from graphrag.config.load_config import load_config
 from pathlib import Path
 from graphrag.config.models.graph_rag_config import GraphRagConfig
@@ -39,18 +40,20 @@ info, error, success = _logger(progress_logger)
 
 workflow = StateGraph(state_schema=MessagesState)
 SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation."
-openai_api_key: str = ""
+openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
+llm_with_tools = None
 
 # Define the function that calls the model
 def call_model(state: MessagesState):
-    global llm, openai_api_key
+    global llm_with_tools, openai_api_key
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
-    if llm is None:
+    if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
-        response = llm.invoke(messages)
+        response: AIMessage = llm_with_tools.invoke(messages) # convert to AIMessage.AI!
+        print(response.tool_calls)
         return {"messages": response}
 
 # Define the node and edge
@@ -63,8 +66,9 @@ app = workflow.compile(checkpointer=memory)
 
 def run_chat_loop():
     """Run an interactive chat loop that echoes user input."""
-    global llm, openai_api_key
-    llm = ChatOpenAI(api_key=SecretStr(openai_api_key), model=config.llm.model)
+    global llm, openai_api_key, llm_with_tools
+    llm = ChatOpenAI(api_key=SecretStr(str(openai_api_key)), model=config.llm.model)
+    llm_with_tools = llm.bind_tools([local_query, global_query])
 
     print("\nEnter your messages (type /exit to quit):")
 
