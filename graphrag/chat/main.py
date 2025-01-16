@@ -57,7 +57,8 @@ _root_dir = None
 # Define the function that calls the model
 def call_model(state: ExtendedMessagesState):
     global llm_with_tools, openai_api_key, _config_filepath, _root_dir
-    # set state config_filepath and root_dir with the global vars. AI!
+    state["config_filepath"] = _config_filepath
+    state["root_dir"] = _root_dir
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response_messages: list[BaseMessage] = []
     if llm_with_tools is None:
