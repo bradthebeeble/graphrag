@@ -9,7 +9,7 @@ import logging
 
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
@@ -55,13 +55,14 @@ def call_model(state: MessagesState):
     else:
         response = llm_with_tools.invoke(messages)
         if (len(response.tool_calls) > 0 ):
-            messages.append(response)
+            response_messages.append(response)
             for tool_call in response.tool_calls:
                 selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
                 tool_msg = selected_tool.invoke(tool_call)
-                messages.append(tool_msg)
-            response = llm_with_tools.invoke(messages)
-        return {"messages": response}
+                response_messages.append(tool_msg)
+            response = llm_with_tools.invoke(response_messages) # concat messages and response_messages. AI!
+        response_messages.append(response)
+        return {"messages": response_messages}
 
 # Define the node and edge
 workflow.add_node("model", call_model)
