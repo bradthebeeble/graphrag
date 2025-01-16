@@ -115,7 +115,7 @@ def run_chat_loop(root_dir: Path,
                     },
                     config={"configurable": {"thread_id": "1"}},
                 )
-                print(f"AI: {ai_msg['messages'][-1].content}")
+                print(f"\nAI: {ai_msg['messages'][-1].content}")
 
         except KeyboardInterrupt:
             print("\nGoodbye!")
