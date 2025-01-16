@@ -205,7 +205,7 @@ def run_chat_loop(root_dir: Path,
                     return cleaned
                 markdown = clean_markdown(ai_msg['messages'][-1].content)
                 state = app.get_state(graph_config)
-                if state.values["next_questions_candidates"] is not null: # fix. AI!
+                if state.values["next_questions_candidates"] is not None:
 
                 console.print(Markdown(markdown))
 
