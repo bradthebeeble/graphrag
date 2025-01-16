@@ -52,7 +52,7 @@ def call_model(state: MessagesState):
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
-        response: AIMessage = llm_with_tools.invoke(messages)
+        response: AIMessage = llm_with_tools.invoke(messages) # coherece to AIMessage. AI!
         print(response.tool_calls)
         return {"messages": response}
 
