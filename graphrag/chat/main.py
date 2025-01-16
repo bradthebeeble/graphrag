@@ -31,7 +31,27 @@ def _logger(logger: ProgressLogger):
 progress_logger: ProgressLogger | None = LoggerFactory().create_logger(LoggerType(LoggerType.RICH))
 info, error, success = _logger(progress_logger)
 
-
+def run_chat_loop():                                                                                           
+     """Run an interactive chat loop that echoes user input."""                                                 
+     print("\nEnter your messages (type /exit to quit):")                                                       
+                                                                                                                
+     while True:                                                                                                
+         try:                                                                                                   
+             user_input = input("\nYou: ").strip()                                                              
+                                                                                                                
+             if user_input.lower() == "/exit":                                                                  
+                 print("Goodbye!")                                                                              
+                 break                                                                                          
+                                                                                                                
+             if user_input:                                                                                     
+                 print(f"Echo: {user_input}")                                                                   
+                                                                                                                
+         except KeyboardInterrupt:                                                                              
+             print("\nGoodbye!")                                                                                
+             break                                                                                              
+         except EOFError:                                                                                       
+             print("\nGoodbye!")                                                                                
+             break        
 def chat_cli(
     root_dir: Path,
     config_filepath: Path | None,
