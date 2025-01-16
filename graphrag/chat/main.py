@@ -45,10 +45,12 @@ openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
 llm_with_tools = None
+_config_filepath = None
+_root_dir = None
 
 # Define the function that calls the model
 def call_model(state: MessagesState):
-    global llm_with_tools, openai_api_key
+    global llm_with_tools, openai_api_key, _config_filepath, _root_dir
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response_messages: list[BaseMessage] = []
     if llm_with_tools is None:
@@ -59,10 +61,12 @@ def call_model(state: MessagesState):
             response_messages.append(response)
             for tool_call in response.tool_calls:
                 selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
-                tool_call["args"].update({"config": config, "root": root_dir})
+                tool_call["args"].update({"config_filepath": _config_filepath, "root_dir": _root_dir})
                 tool_msg = selected_tool.invoke(tool_call)
                 response_messages.append(tool_msg)
-            response = llm_with_tools.invoke(messages +  response_messages)
+            # go over all response messages . and for each over its tool_call array and delete the keys config_filepath and root_dir from its args prop. AI!
+            messages_thread = messages +  response_messages
+            response = llm_with_tools.invoke(messages_thread)
         response_messages.append(response)
         return {"messages": response_messages}
 
@@ -74,9 +78,12 @@ workflow.add_edge(START, "model")
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
 
-def run_chat_loop():
+def run_chat_loop(root_dir: Path,
+                  config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
-    global llm, openai_api_key, llm_with_tools
+    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir
+    _config_filepath = config_filepath
+    _root_dir = root_dir
     llm = ChatOpenAI(api_key=SecretStr(str(openai_api_key)), model=config.llm.model)
     llm_with_tools = llm.bind_tools([local_query, global_query])
 
@@ -123,4 +130,4 @@ def chat_cli(
         error("OpenAI API key not configured in LLM settings")
     else:
         success("Starting chat")
-        run_chat_loop()
+        run_chat_loop(root_dir, config_filepath)
