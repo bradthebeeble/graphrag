@@ -64,8 +64,15 @@ def call_model(state: MessagesState):
                 tool_call["args"].update({"config_filepath": _config_filepath, "root_dir": _root_dir})
                 tool_msg = selected_tool.invoke(tool_call)
                 response_messages.append(tool_msg)
-            # go over all response messages . and for each over its tool_call array and delete the keys config_filepath and root_dir from its args prop. AI!
-            messages_thread = messages +  response_messages
+            
+            # Remove 'config_filepath' and 'root_dir' from each tool_call's args in response_messages
+            for msg in response_messages:
+                if isinstance(msg, AIMessage) and hasattr(msg, 'tool_calls'):
+                    for tool_call in msg.tool_calls:
+                        tool_call["args"].pop("config_filepath", None)
+                        tool_call["args"].pop("root_dir", None)
+
+            messages_thread = messages + response_messages
             response = llm_with_tools.invoke(messages_thread)
         response_messages.append(response)
         return {"messages": response_messages}
