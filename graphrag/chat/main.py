@@ -13,7 +13,12 @@ from graphrag.logger.types import LoggerType
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import START, MessagesState, StateGraph
+from langgraph.graph import START, StateGraph
+from typing import TypedDict
+
+class ExtendedMessagesState(TypedDict):
+    messages: list[BaseMessage]
+    next_questions_candidates: list[str]
 
 log = logging.getLogger(__name__)
 
@@ -39,8 +44,7 @@ def _logger(logger: ProgressLogger):
 progress_logger: ProgressLogger | None = LoggerFactory().create_logger(LoggerType(LoggerType.NONE))
 info, error, success = _logger(progress_logger)
 
-# extend MessagesState by adding a new key next_questions_candidates of type list[str]; replace any use of MessagesState in the code with this new type. AI!
-workflow = StateGraph(state_schema=MessagesState)
+workflow = StateGraph(state_schema=ExtendedMessagesState)
 SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation."
 openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
@@ -50,7 +54,7 @@ _config_filepath = None
 _root_dir = None
 
 # Define the function that calls the model
-def call_model(state: MessagesState):
+def call_model(state: ExtendedMessagesState):
     global llm_with_tools, openai_api_key, _config_filepath, _root_dir
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
     response_messages: list[BaseMessage] = []
