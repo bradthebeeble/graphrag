@@ -1,3 +1,4 @@
+from typing import cast
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 from graphrag.chat.query_tools_defs import global_query, local_query
@@ -53,10 +54,11 @@ def call_model(state: MessagesState):
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
-        response = llm_with_tools.invoke(messages)
+        response = cast(AIMessage, llm_with_tools.invoke(messages))
         if (len(response.tool_calls) > 0 ):
             response_messages.append(response)
             for tool_call in response.tool_calls:
+                # update the line below; it shold only use the query arg in the tool_call["name"] and append it two local args. config and root based on config_filepath and root_dir local values. AI!
                 selected_tool = {"local_query": local_query, "global_query": global_query}[tool_call["name"].lower()]
                 tool_msg = selected_tool.invoke(tool_call)
                 response_messages.append(tool_msg)
