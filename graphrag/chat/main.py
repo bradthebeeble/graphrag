@@ -98,7 +98,6 @@ def call_tools(state: ExtendedMessagesState):
 def call_model(state: ExtendedMessagesState):
     global llm_with_tools, openai_api_key, _config_filepath, _root_dir
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
-    response_messages: list[BaseMessage] = []
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
@@ -158,12 +157,17 @@ workflow.add_edge("candidate_fup_questions", END)
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
 
+INITIAL_RESPONSE_FORMAT = "A single paragraph"
+INIITAL_USER_PROMPT = f"Summarize the key points in this body of knowledge. Use global_query tool, and {INITIAL_RESPONSE_FORMAT} as the response type"
+
 
 
 def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
     global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir
+    initial_run = True
+
     _config_filepath = config_filepath
     _root_dir = root_dir
     llm = ChatOpenAI(api_key=SecretStr(str(openai_api_key)), model=config.llm.model)
@@ -172,11 +176,17 @@ def run_chat_loop(root_dir: Path,
         "configurable": 
             {"thread_id": THREAD_ID}
             })
-    print("\nEnter your messages (type /exit to quit):")
+    if initial_run:
+        print("Summarizing key points of your knowledge base...")
+        # print("\nEnter your messages (type /exit to quit):")
 
     while True:
         try:
-            user_input = input("\nYou: ").strip()
+            if initial_run:
+                user_input = INIITAL_USER_PROMPT
+                initial_run = False
+            else:
+                user_input = input("\nYou: ").strip()
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
@@ -206,6 +216,8 @@ def run_chat_loop(root_dir: Path,
                 markdown = clean_markdown(ai_msg['messages'][-1].content)
                 state = app.get_state(graph_config)
                 if state.values["next_questions_candidates"] is not None:
+                    console.print("You can followup with any of these questions by using the /fup [id] command")
+                    # create a list of questions in the format [idx+1]: question AI!
                     for question in state.values["next_questions_candidates"]:
                         print(f"Candidate Question: {question}")
 
