@@ -122,7 +122,7 @@ def call_candidate_fup_questions(state: ExtendedMessagesState):
                 data_dir=None,
                 root_dir=root_dir,
                 community_level=2,
-                query=history,
+                query=cast(list[str],history)
             )
     return {
         "next_questions_candidates": next_questions_candidates
@@ -182,11 +182,13 @@ def run_chat_loop(root_dir: Path,
 
     while True:
         try:
+            state = app.get_state(graph_config)
             user_input = input("\nYou: ").strip()
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
                 break
+            # if user_input.lower() is /fup , take the number that follows. Find in state.values["next_questions_candidates"] the index-1 of it; use it as your HumanMessage instead of user_input. AI!
 
             if user_input:
                 ai_msg = app.invoke(
@@ -211,7 +213,6 @@ def run_chat_loop(root_dir: Path,
                     return cleaned
                 markdown = clean_markdown(ai_msg['messages'][-1].content)
                 console.print(Markdown(markdown))
-                state = app.get_state(graph_config)
                 if state.values["next_questions_candidates"] is not None:
                     console.print("You can followup with any of these questions by using the /fup [id] command")
                     for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
