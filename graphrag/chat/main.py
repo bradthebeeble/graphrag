@@ -217,9 +217,8 @@ def run_chat_loop(root_dir: Path,
                 state = app.get_state(graph_config)
                 if state.values["next_questions_candidates"] is not None:
                     console.print("You can followup with any of these questions by using the /fup [id] command")
-                    # create a list of questions in the format [idx+1]: question AI!
-                    for question in state.values["next_questions_candidates"]:
-                        print(f"Candidate Question: {question}")
+                    for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
+                        print(f"[{idx}]: {question}")
 
                 console.print(Markdown(markdown))
 
