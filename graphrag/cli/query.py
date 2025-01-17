@@ -408,7 +408,7 @@ def run_question_generator(
             query=query,
         )
     )
-    logger.success(f"Question Generation Response:\n{response}")
+    # logger.success(f"Question Generation Response:\n{response}")
     # NOTE: we return the response and context data here purely as a complete demonstration of the API.
     # External users should use the API directly to get the response and context data.
     return response

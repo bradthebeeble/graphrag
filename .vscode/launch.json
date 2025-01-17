@@ -53,9 +53,9 @@
 			"args": [
 				"poe", "query",
 				"--root", "${input:PROJECT_ROOT}",
-				"--method", "local",
-				"--query", "Find data on our high-end sedans at Boston venue: Historical monthly sales for the past six months (Jul - Dec) ,competitor pricing on similar models,a local market trend indicator for luxury cars, and a brief overview of top complaints or negative feedback from our customers.",
-				"--response-type", "4-5 paragraphs"
+				"--method", "global",
+				"--query", "Summarize the key points in this body of knowledge.",
+				"--response-type", "A single paragraph"
 			]
 		},
 		{
