@@ -111,6 +111,7 @@ def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
     history = []
     if is_tool_message:
+        # update history to only include HumanMessages messages that percede a ToolMessage. AI!
         history: list[str] = cast(list[str],[msg.content for msg in state["messages"] if isinstance(msg, HumanMessage)])
         config_filepath = state["config_filepath"]
         root_dir=state["root_dir"]
@@ -166,7 +167,6 @@ def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
     global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir
-    initial_run = True
 
     _config_filepath = config_filepath
     _root_dir = root_dir
@@ -176,17 +176,11 @@ def run_chat_loop(root_dir: Path,
         "configurable": 
             {"thread_id": THREAD_ID}
             })
-    if initial_run:
-        print("Summarizing key points of your knowledge base...")
-        # print("\nEnter your messages (type /exit to quit):")
+    console.print("\nEnter your messages (available commands: /summarize , /fup [question id], /dd [cell id]. type /exit to quit):")
 
     while True:
         try:
-            if initial_run:
-                user_input = INIITAL_USER_PROMPT
-                initial_run = False
-            else:
-                user_input = input("\nYou: ").strip()
+            user_input = input("\nYou: ").strip()
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
@@ -214,13 +208,13 @@ def run_chat_loop(root_dir: Path,
                     cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
                     return cleaned
                 markdown = clean_markdown(ai_msg['messages'][-1].content)
+                console.print(Markdown(markdown))
                 state = app.get_state(graph_config)
                 if state.values["next_questions_candidates"] is not None:
                     console.print("You can followup with any of these questions by using the /fup [id] command")
                     for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
                         print(f"[{idx}]: {question}")
 
-                console.print(Markdown(markdown))
 
 
         except KeyboardInterrupt:
