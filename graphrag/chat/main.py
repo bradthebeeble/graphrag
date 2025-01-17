@@ -188,7 +188,14 @@ def run_chat_loop(root_dir: Path,
             if user_input.lower() == "/exit":
                 print("Goodbye!")
                 break
-            # if user_input.lower() is /fup , take the number that follows. Find in state.values["next_questions_candidates"] the index-1 of it; use it as your HumanMessage instead of user_input. AI!
+
+            if user_input.lower().startswith("/fup"):
+                try:
+                    fup_index = int(user_input.split()[1]) - 1
+                    user_input = state.values["next_questions_candidates"][fup_index]
+                except (IndexError, ValueError):
+                    print("Invalid follow-up command. Please use /fup [question id].")
+                    continue
 
             if user_input:
                 ai_msg = app.invoke(
