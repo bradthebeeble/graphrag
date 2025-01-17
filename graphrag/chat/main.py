@@ -111,10 +111,9 @@ def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
     history = []
     if is_tool_message:
-        # update history to only include HumanMessages messages that percede a ToolMessage. AI!
-        history: list[str] = cast(list[str],[msg.content for msg in state["messages"] if isinstance(msg, HumanMessage)])
+        history = [msg.content for msg in state["messages"] if isinstance(msg, HumanMessage)]
         config_filepath = state["config_filepath"]
-        root_dir=state["root_dir"]
+        root_dir = state["root_dir"]
         next_questions_candidates = run_question_generator(
                 config_filepath,
                 data_dir=None,
