@@ -419,7 +419,7 @@ def _chat_cli(
     ] = None,
 ):
     """Run the top-level Chat logic"""
-    print("****** WELCOME TO THE AWEL DEMO APP ******")
+    print("********************** WELCOME TO THE AWEL DEMO APP **********************")
     chat_cli(root_dir=root, config_filepath=config)
 
 

@@ -110,13 +110,15 @@ def call_model(state: ExtendedMessagesState):
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
     history = []
+    next_questions_candidates = []
     if is_tool_message:
         history = [
             msg.content for i, msg in enumerate(state["messages"][:-1])
-            if isinstance(msg, HumanMessage) and isinstance(state["messages"][i + 1], ToolMessage)
+            if isinstance(msg, HumanMessage) and isinstance(state["messages"][i + 2], ToolMessage)
         ]
         config_filepath = state["config_filepath"]
         root_dir = state["root_dir"]
+        console.print("[bold red]AWEL:[/bold red] Generating follow-up candidate questions")
         next_questions_candidates = run_question_generator(
                 config_filepath,
                 data_dir=None,
@@ -169,6 +171,7 @@ def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
     global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir
+    should_fup_with_questions = True
 
     _config_filepath = config_filepath
     _root_dir = root_dir
@@ -183,7 +186,7 @@ def run_chat_loop(root_dir: Path,
     while True:
         try:
             state = app.get_state(graph_config)
-            user_input = input("\nYou: ").strip()
+            user_input = console.input("\n[bold yellow]You:[/bold yellow] ").strip()
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
@@ -196,6 +199,9 @@ def run_chat_loop(root_dir: Path,
                 except (IndexError, ValueError):
                     print("Invalid follow-up command. Please use /fup [question id].")
                     continue
+            elif user_input.lower().startswith("/summarize"):
+                should_fup_with_questions = False
+                user_input = "Summarize key themse of data. Use global query tool. Respond in a single short paragraph."
 
             if user_input:
                 ai_msg = app.invoke(
@@ -208,7 +214,7 @@ def run_chat_loop(root_dir: Path,
                     },
                     config=graph_config,
                 )
-                console.print("AI:")
+                console.print("[bold magenta]AI:[/bold magenta]")
                 import re
                 def clean_markdown(raw_markdown):
                     # Remove surrounding quotes
@@ -220,11 +226,16 @@ def run_chat_loop(root_dir: Path,
                     return cleaned
                 markdown = clean_markdown(ai_msg['messages'][-1].content)
                 console.print(Markdown(markdown))
-                if state.values["next_questions_candidates"] is not None:
-                    console.print("You can followup with any of these questions by using the /fup [id] command")
-                    for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
-                        print(f"[{idx}]: {question}")
-
+                if should_fup_with_questions:
+                    state = app.get_state(graph_config)
+                    if state.values["next_questions_candidates"] is not None:
+                        console.print("\n\nYou can followup with any of these questions by using the /fup [id] command")
+                        for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
+                            console.print(f"[{idx}]: {question}")
+                else:
+                    should_fup_with_questions = True
+                
+                console.print("\n\n===============================================================================\n\n")
 
 
         except KeyboardInterrupt:
