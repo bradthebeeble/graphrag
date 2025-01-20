@@ -10,6 +10,7 @@ from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.logger.base import ProgressLogger
 import logging
 
+
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage, ToolMessage
@@ -22,6 +23,7 @@ from typing import TypedDict
 from rich.console import Console
 from rich.markdown import Markdown
 from graphrag.chat.awel_logo import AWEL_LOGO
+from graphrag.chat.grid_graph import grid_subgraph
 
 class ExtendedMessagesState(TypedDict):
     config_filepath: Path | None
@@ -106,7 +108,13 @@ def call_model(state: ExtendedMessagesState):
             "config_filepath" : _config_filepath,
             "root_dir" : _root_dir
             }
-        
+
+def call_grid(state: ExtendedMessagesState):
+    response = grid_subgraph.invoke({
+        "query" : state["messages"][-1].content # replace that with the most recent message of type HumanMessage. AI!
+    })
+    print(response["query"])
+
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
     history = []
@@ -148,14 +156,15 @@ def route_tools(
 workflow.add_node("model", call_model)
 workflow.add_node("tools", call_tools)
 workflow.add_node("candidate_fup_questions", call_candidate_fup_questions)
+workflow.add_node("call_grid", call_grid)
 workflow.add_edge(START, "model")
 workflow.add_conditional_edges(
     "model",
     route_tools,
-    {"tools": "tools", END: "candidate_fup_questions"},
+    {"tools": "tools", END: "call_grid"},
 )
 workflow.add_edge("tools", "model")
-
+workflow.add_edge("call_grid","candidate_fup_questions")
 workflow.add_edge("candidate_fup_questions", END)
 
 # Add simple in-memory checkpointer
