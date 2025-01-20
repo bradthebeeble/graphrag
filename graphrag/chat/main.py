@@ -110,8 +110,13 @@ def call_model(state: ExtendedMessagesState):
             }
 
 def call_grid(state: ExtendedMessagesState):
+    # Find the most recent HumanMessage
+    recent_human_message = next(
+        (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
+        None
+    )
     response = grid_subgraph.invoke({
-        "query" : state["messages"][-1].content # replace that with the most recent message of type HumanMessage. AI!
+        "query": recent_human_message.content if recent_human_message else ""
     })
     print(response["query"])
 
