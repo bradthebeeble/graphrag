@@ -277,10 +277,10 @@ def run_chat_loop(root_dir: Path,
                 
                 if grid_dimensions:
                     console.print("\n[bold blue]Do you want me to display any of these grids?[/bold blue]")
-                    for dimension in grid_dimensions: # update display to show [idx] before each line. AI!
+                    for idx, dimension in enumerate(grid_dimensions, start=1):
                         dimension_name = dimension.get("dimension", "Unknown Dimension")
                         values = dimension.get("values", [])
-                        console.print(f"[bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
+                        console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
 
                 console.print("\n\n===============================================================================\n\n")
 
