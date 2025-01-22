@@ -17,7 +17,6 @@ class GridSubgraphState(TypedDict):
     model: Any
 
 
-# this function should throw an exception (on the interrupt line), that shoud be caught by the function that calls it (in main.py) file. AI!
 def retrieve_candidate_dimensions(state: GridSubgraphState):
     llm = state["model"]
     prompt_template = PromptTemplate.from_template(DIMENTION_EXTRACTION)
