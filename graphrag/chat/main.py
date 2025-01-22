@@ -10,8 +10,6 @@ from pathlib import Path
 from graphrag.config.models.graph_rag_config import GraphRagConfig
 from graphrag.logger.base import ProgressLogger
 import logging
-
-
 from graphrag.logger.factory import LoggerFactory
 from graphrag.logger.types import LoggerType
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, BaseMessage, ToolMessage
@@ -21,7 +19,6 @@ from langgraph.graph import START, END, StateGraph
 from langchain_core.runnables.config import RunnableConfig
 from typing import TypedDict
 from langgraph.types import Command
-
 from rich.console import Console
 from rich.markdown import Markdown
 from graphrag.chat.awel_logo import AWEL_LOGO
@@ -31,7 +28,7 @@ class ExtendedMessagesState(TypedDict):
     config_filepath: Path | None
     root_dir: Path 
     messages: Annotated[list, add_messages]
-    next_questions_candidates: list[str]
+    next_questions_candidates: list[str] 
     dimensions: list[dict[str, Any]]
 
 
@@ -66,7 +63,7 @@ openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
 llm_with_tools = None
-THREAD_ID = 1
+THREAD_ID = uuid.uuid4()
 grid_dimensions: list = []
 
 # Tools call node
@@ -147,7 +144,7 @@ def call_grid(state: ExtendedMessagesState):
             "response": state["messages"][-1].content,
             "json_schema": json_schema,
             "model" : llm
-        })
+        }, config=subgraph_config)
         print("Returned without an exception")
     except Exception as e:
         grid_dimensions = e.args[0][0].value["dimensions"]
@@ -191,20 +188,50 @@ def route_tools(
         return "tools"
     return END
 
+def command_router(
+    state: ExtendedMessagesState,
+):
+    # for now, just return call_model
+    return "call_model"
+
+def display_results(state: ExtendedMessagesState):
+    should_fup_with_questions = True
+
+    console.print("[bold magenta]AI:[/bold magenta]")
+    import re
+    def clean_markdown(raw_markdown):
+        # Remove surrounding quotes
+        cleaned = raw_markdown.strip('"').strip("'")
+        # Replace literal "\n" with actual newlines
+        cleaned = cleaned.replace("\\n", "\n")
+        # Optionally, normalize whitespace
+        cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
+        return cleaned
+    markdown = clean_markdown(state['messages'][-1].content)
+    console.print(Markdown(markdown))
+    if should_fup_with_questions:
+        if state["next_questions_candidates"] is not None: # update to check if key "next_questions_candidates" exists. AI!
+            console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
+            for idx, question in enumerate(state["next_questions_candidates"], start=1):
+                console.print(f"[{idx}]: {question}")
+    else:
+        should_fup_with_questions = True
+    
+    if grid_dimensions:
+        console.print("\n[bold blue]You can ask me to display a grid across any of these dimensions by using /grid [[id]]?[/bold blue]")
+        for idx, dimension in enumerate(grid_dimensions, start=1):
+            dimension_name = dimension.get("dimension", "Unknown Dimension")
+            values = dimension.get("values", [])
+            console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
+
+    console.print("\n\n=======================================================================================\n\n")
+
 # Define the node and edge
-workflow.add_node("model", call_model)
-workflow.add_node("tools", call_tools)
-workflow.add_node("candidate_fup_questions", call_candidate_fup_questions)
-workflow.add_node("call_grid", call_grid)
-workflow.add_edge(START, "model")
-workflow.add_conditional_edges(
-    "model",
-    route_tools,
-    {"tools": "tools", END: "call_grid"},
-)
-workflow.add_edge("tools", "model")
-workflow.add_edge("call_grid","candidate_fup_questions")
-workflow.add_edge("candidate_fup_questions", END)
+workflow.add_node("call_model", call_model)
+workflow.add_node("display_results", display_results)
+workflow.add_conditional_edges(START, command_router)
+
+workflow.add_edge("call_model", "display_results")
 
 # Add simple in-memory checkpointer
 memory = MemorySaver()
@@ -219,7 +246,6 @@ def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
     global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir, graph_config, subgraph_config
-    should_fup_with_questions = True
 
     _config_filepath = config_filepath
     _root_dir = root_dir
@@ -229,10 +255,10 @@ def run_chat_loop(root_dir: Path,
         "configurable": 
             {"thread_id": THREAD_ID}
             })
-    subgraph_config = {
+    subgraph_config = RunnableConfig({
         "configurable": 
             {"thread_id": uuid.uuid4()}
-    }
+    })
     console.print("\nEnter your messages (available commands: /summarize , /fup [question id], /dd [cell id]. type /exit to quit):")
 
     while True:
@@ -273,37 +299,6 @@ def run_chat_loop(root_dir: Path,
                     },
                     config=graph_config,
                 )
-                console.print("[bold magenta]AI:[/bold magenta]")
-                import re
-                def clean_markdown(raw_markdown):
-                    # Remove surrounding quotes
-                    cleaned = raw_markdown.strip('"').strip("'")
-                    # Replace literal "\n" with actual newlines
-                    cleaned = cleaned.replace("\\n", "\n")
-                    # Optionally, normalize whitespace
-                    cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
-                    return cleaned
-                markdown = clean_markdown(ai_msg['messages'][-1].content)
-                console.print(Markdown(markdown))
-                if should_fup_with_questions:
-                    state = app.get_state(graph_config)
-                    if state.values["next_questions_candidates"] is not None:
-                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
-                        for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
-                            console.print(f"[{idx}]: {question}")
-                else:
-                    should_fup_with_questions = True
-                
-                if grid_dimensions:
-                    console.print("\n[bold blue]You can ask me to display a grid across any of these dimensions by using /grid [[id]]?[/bold blue]")
-                    for idx, dimension in enumerate(grid_dimensions, start=1):
-                        dimension_name = dimension.get("dimension", "Unknown Dimension")
-                        values = dimension.get("values", [])
-                        console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
-
-                console.print("\n\n=======================================================================================\n\n")
-
-
         except KeyboardInterrupt:
             print("\nGoodbye!")
             break
