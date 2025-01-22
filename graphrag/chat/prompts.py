@@ -143,8 +143,8 @@ DIMENTION_EXTRACTION = """
             This trend indicates a positive response to the new customer service initiatives implemented in mid-2023, which focused on enhancing the customer experience through personalized service and faster response times.
             The improvements were most significant in the Boston and New York venues, where customer feedback highlighted the effectiveness of these changes.
     JSON Dump: 
-        {
-            "Customer": {
+        {{
+            "Customer": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "name": "str",
@@ -154,8 +154,8 @@ DIMENTION_EXTRACTION = """
                 "car_model": "str",
                 "car_trim": "str",
                 "mileage": "int"
-            },
-            "CustomerSatisfaction": {
+            }},
+            "CustomerSatisfaction": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "score": "float",
@@ -163,8 +163,8 @@ DIMENTION_EXTRACTION = """
                 "year": "int",
                 "venue": "str",
                 "feedback": "Optional[str]"
-            }
-        }
+            }}
+        }}
     Output: [
         {
             "dimension": "Quarter",
@@ -191,8 +191,8 @@ DIMENTION_EXTRACTION = """
             Mid-size sedans maintained a steady market presence, while luxury sedans saw a slight decline due to increased competition from new electric vehicle models.
             The sales data also revealed a growing interest in hybrid models across all categories, reflecting a shift towards more sustainable vehicle options.
     JSON Dump: 
-        {
-            "VehicleCategory": {
+        {{
+            "VehicleCategory": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "name": "str",
@@ -200,15 +200,15 @@ DIMENTION_EXTRACTION = """
                 "sales_units": "int",
                 "year": "int",
                 "trends": "Optional[List[str]]"
-            },
-            "SalesVolume": {
+            }},
+            "SalesVolume": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "category": "str",
                 "units_sold": "int",
                 "year": "int"
-            }
-        }
+            }}
+        }}
     Output: [
         {
             "dimension": "VehicleCategory",
