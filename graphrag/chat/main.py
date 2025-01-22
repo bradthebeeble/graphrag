@@ -111,7 +111,7 @@ def call_model(state: ExtendedMessagesState):
             }
 
 def call_grid(state: ExtendedMessagesState):
-    global grid_dimensions
+    global grid_dimensions, graph_config
     # Find the most recent HumanMessage
     recent_human_message = next(
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
@@ -143,11 +143,12 @@ def call_grid(state: ExtendedMessagesState):
             "response": state["messages"][-1].content,
             "json_schema": json_schema,
             "model" : llm
-        })
+        },
+                    config=graph_config)
         grid_dimensions = response["dimensions"]
     except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
-        grid_dimensions = []
+        grid_dimensions = e.args[0][0].value # retrieve returned dimention from call
+
     
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
@@ -214,7 +215,7 @@ INIITAL_USER_PROMPT = f"Summarize the key points in this body of knowledge. Use 
 def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
-    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir
+    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir, graph_config
     should_fup_with_questions = True
 
     _config_filepath = config_filepath
@@ -235,7 +236,7 @@ def run_chat_loop(root_dir: Path,
             if user_input.lower() == "/exit":
                 print("Goodbye!")
                 break
-
+            # add a clause looking for command /grid followed by index, and then print that index. AI!
             if user_input.lower().startswith("/fup"):
                 try:
                     fup_index = int(user_input.split()[1]) - 1
@@ -273,7 +274,7 @@ def run_chat_loop(root_dir: Path,
                 if should_fup_with_questions:
                     state = app.get_state(graph_config)
                     if state.values["next_questions_candidates"] is not None:
-                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
+                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [id]] command[/bold blue]")
                         for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
                             console.print(f"[{idx}]: {question}")
                 else:
