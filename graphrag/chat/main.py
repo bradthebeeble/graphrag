@@ -197,9 +197,13 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
         None
     )
+    recent_ai_message = next(
+        (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
+        None
+    )
     prompt = prompt_template.invoke({
         "user_query" : recent_human_message.content if recent_human_message else "",
-        "response" : state["response"], # extract the most recent message of type AIMessage. AI!
+        "response" : recent_ai_message.content if recent_ai_message else "",
         "json_schema" : state["json_schema"]
     })
     response = llm.invoke(prompt)
