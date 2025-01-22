@@ -63,6 +63,7 @@ config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
 llm_with_tools = None
 THREAD_ID = 1
+grid_dimensions = None
 
 # Tools call node
 def call_tools(state: ExtendedMessagesState):
@@ -121,7 +122,7 @@ def call_grid(state: ExtendedMessagesState):
     )
     import json
 
-    json_scheme = json.dumps({
+    json_schema = json.dumps({
         "Customer": Customer.model_json_schema(),
         "VehicleModel": VehicleModel.model_json_schema(),
         "CustomerReviewOfVehicle": CustomerReviewOfVehicle.model_json_schema(),
@@ -136,9 +137,11 @@ def call_grid(state: ExtendedMessagesState):
     response = grid_subgraph.invoke({
         "query": recent_human_message.content if recent_human_message else "",
         "response": state["messages"][-1].content,
-        "json_scheme": json_scheme
+        "json_schema": json_schema,
+        "model" : llm
     })
-    print(response["query"])
+    grid_dimensions = response["dimensions"]
+    
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
@@ -269,6 +272,7 @@ def run_chat_loop(root_dir: Path,
                 else:
                     should_fup_with_questions = True
                 
+                # iterate over grid_dimensions and display a nicely formtted message. title: do you want me to display any of these grids. Then for ecah item in the list, display the value in dimension key and the set of values in key values as examples. AI!
                 console.print("\n\n===============================================================================\n\n")
 
 
