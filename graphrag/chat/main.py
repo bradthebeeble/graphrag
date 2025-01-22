@@ -141,15 +141,18 @@ def call_grid(state: ExtendedMessagesState):
 
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
-    # wrap in try/catch block. AI!
-    response = grid_subgraph.invoke({
-        "query": recent_human_message.content if recent_human_message else "",
-        "response": state["messages"][-1].content,
-        "json_schema": json_schema,
-        "model" : llm
-    },
-                config=subgraph_config)
-    print("Returned without an exception")
+    try:
+        response = grid_subgraph.invoke({
+            "query": recent_human_message.content if recent_human_message else "",
+            "response": state["messages"][-1].content,
+            "json_schema": json_schema,
+            "model" : llm
+        },
+                    config=subgraph_config)
+        print("Returned without an exception")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {str(e)}")
+        grid_dimensions = []
     # grid_dimensions = response["dimensions"]
 
     
