@@ -272,7 +272,13 @@ def run_chat_loop(root_dir: Path,
                 else:
                     should_fup_with_questions = True
                 
-                # iterate over grid_dimensions and display a nicely formtted message. title: do you want me to display any of these grids. Then for ecah item in the list, display the value in dimension key and the set of values in key values as examples. AI!
+                if grid_dimensions:
+                    console.print("\n[bold blue]Do you want me to display any of these grids?[/bold blue]")
+                    for dimension in grid_dimensions:
+                        dimension_name = dimension.get("dimension", "Unknown Dimension")
+                        values = dimension.get("values", [])
+                        console.print(f"[bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
+
                 console.print("\n\n===============================================================================\n\n")
 
 
