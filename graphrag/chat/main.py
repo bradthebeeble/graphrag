@@ -210,7 +210,7 @@ def display_results(state: ExtendedMessagesState):
     markdown = clean_markdown(state['messages'][-1].content)
     console.print(Markdown(markdown))
     if should_fup_with_questions:
-        if state["next_questions_candidates"] is not None: # update to check if key "next_questions_candidates" exists. AI!
+        if "next_questions_candidates" in state and state["next_questions_candidates"] is not None:
             console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
             for idx, question in enumerate(state["next_questions_candidates"], start=1):
                 console.print(f"[{idx}]: {question}")
