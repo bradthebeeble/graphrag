@@ -122,15 +122,15 @@ def call_grid(state: ExtendedMessagesState):
     import json
 
     json_scheme = json.dumps({
-        "Customer": Customer.schema(),
-        "VehicleModel": VehicleModel.schema(),
-        "CustomerReviewOfVehicle": CustomerReviewOfVehicle.schema(),
-        "DealershipVenue": DealershipVenue.schema(),
-        "DealerNetwork": DealerNetwork.schema(),
-        "Insight": Insight.schema(),
-        "SalesMetric": SalesMetric.schema(),
-        "VehicleCategory": VehicleCategory.schema(),
-        "MonthYear": MonthYear.schema()
+        "Customer": Customer.model_json_schema(),
+        "VehicleModel": VehicleModel.model_json_schema(),
+        "CustomerReviewOfVehicle": CustomerReviewOfVehicle.model_json_schema(),
+        "DealershipVenue": DealershipVenue.model_json_schema(),
+        "DealerNetwork": DealerNetwork.model_json_schema(),
+        "Insight": Insight.model_json_schema(),
+        "SalesMetric": SalesMetric.model_json_schema(),
+        "VehicleCategory": VehicleCategory.model_json_schema(),
+        "MonthYear": MonthYear.model_json_schema()
     })
 
     response = grid_subgraph.invoke({
