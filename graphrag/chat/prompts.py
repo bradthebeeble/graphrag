@@ -36,8 +36,8 @@ DIMENTION_EXTRACTION = """
             dealership's responsiveness to these challenges will be crucial for sustaining growth and enhancing customer loyalty moving forward. 
     JSON Dump: 
 
-        {
-            "Customer": {
+        {{
+            "Customer": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "name": "str",
@@ -47,8 +47,8 @@ DIMENTION_EXTRACTION = """
                 "car_model": "str",
                 "car_trim": "str",
                 "mileage": "int"
-            },
-            "VehicleModel": {
+            }},
+            "VehicleModel": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "make": "str",
@@ -56,8 +56,8 @@ DIMENTION_EXTRACTION = """
                 "trim": "Optional[str]",
                 "segment": "Optional[str]",
                 "features": "Optional[List[str]]"
-            },
-            "CustomerReviewOfVehicle": {
+            }},
+            "CustomerReviewOfVehicle": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "rating": "float",
@@ -67,8 +67,8 @@ DIMENTION_EXTRACTION = """
                 "pros": "Optional[List[str]]",
                 "cons": "Optional[List[str]]",
                 "sentiment": "str"
-            },
-            "DealershipVenue": {
+            }},
+            "DealershipVenue": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "city": "str",
@@ -78,16 +78,16 @@ DIMENTION_EXTRACTION = """
                 "year": "Optional[int]",
                 "is_strategic_location": "Optional[bool]",
                 "notes": "Optional[str]"
-            },
-            "DealerNetwork": {
+            }},
+            "DealerNetwork": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "name": "str",
                 "region": "Optional[str]",
                 "specialization": "Optional[str]",
                 "service_features": "Optional[List[str]]"
-            },
-            "Insight": {
+            }},
+            "Insight": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "title": "str",
@@ -99,8 +99,8 @@ DIMENTION_EXTRACTION = """
                 "risk_factors": "Optional[List[str]]",
                 "trends": "Optional[List[str]]",
                 "impact_areas": "Optional[List[str]]"
-            },
-            "SalesMetric": {
+            }},
+            "SalesMetric": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "metric_name": "str",
@@ -109,8 +109,8 @@ DIMENTION_EXTRACTION = """
                 "unit": "str",
                 "category": "str",
                 "notes": "Optional[str]"
-            },
-            "VehicleCategory": {
+            }},
+            "VehicleCategory": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "name": "str",
@@ -122,8 +122,8 @@ DIMENTION_EXTRACTION = """
                 "average_transaction_price": "Optional[float]",
                 "trends": "Optional[List[str]]",
                 "year": "Optional[int]"
-            },
-            "MonthYear": {
+            }},
+            "MonthYear": {{
                 "id": "int",
                 "human_readable_id": "int",
                 "month": "str",
@@ -132,8 +132,8 @@ DIMENTION_EXTRACTION = """
                 "market_share": "float",
                 "average_transaction_price": "float",
                 "year_over_year_growth": "float"
-            }
-        }
+            }}
+        }}
     Output: [{'MonthYear', ['Jan2024', 'Feb2024', 'Mar2024', 'Apr2024', 'May2024'], 90}, {'DealershipVenue', ['Boston', 'Cleveland', 'Pittsburgh'], 85}, {'VehicleCategory', ['Compact SUV','Mid-size sedan', 'Luxury Sedan'],78}, {'CustomerReviewOfVehicle',['issues related to warranty claims mishandling'],60},{'Inisght',['improving customer service and introduced digital service tracking systems'],50}]
 
     Example 2:
