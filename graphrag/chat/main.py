@@ -1,5 +1,6 @@
 import json
-from typing import Annotated, cast
+from typing import Annotated, Any, cast
+import uuid
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 from graphrag.chat.query_tools_defs import  global_query, local_query
@@ -19,6 +20,7 @@ from langgraph.graph.message import add_messages
 from langgraph.graph import START, END, StateGraph
 from langchain_core.runnables.config import RunnableConfig
 from typing import TypedDict
+from langgraph.types import Command
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -30,6 +32,8 @@ class ExtendedMessagesState(TypedDict):
     root_dir: Path 
     messages: Annotated[list, add_messages]
     next_questions_candidates: list[str]
+    dimensions: list[dict[str, Any]]
+
 
 log = logging.getLogger(__name__)
 console = Console()
@@ -111,7 +115,7 @@ def call_model(state: ExtendedMessagesState):
             }
 
 def call_grid(state: ExtendedMessagesState):
-    global grid_dimensions, graph_config
+    global grid_dimensions, graph_config, subgraph_config
     # Find the most recent HumanMessage
     recent_human_message = next(
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
@@ -137,17 +141,16 @@ def call_grid(state: ExtendedMessagesState):
 
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
-    try:
-        response = grid_subgraph.invoke({
-            "query": recent_human_message.content if recent_human_message else "",
-            "response": state["messages"][-1].content,
-            "json_schema": json_schema,
-            "model" : llm
-        },
-                    config=graph_config)
-        grid_dimensions = response["dimensions"]
-    except Exception as e:
-        grid_dimensions = e.args[0][0].value # retrieve returned dimention from call
+    # wrap in try/catch block. AI!
+    response = grid_subgraph.invoke({
+        "query": recent_human_message.content if recent_human_message else "",
+        "response": state["messages"][-1].content,
+        "json_schema": json_schema,
+        "model" : llm
+    },
+                config=subgraph_config)
+    print("Returned without an exception")
+    # grid_dimensions = response["dimensions"]
 
     
 
@@ -215,7 +218,7 @@ INIITAL_USER_PROMPT = f"Summarize the key points in this body of knowledge. Use 
 def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
-    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir, graph_config
+    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir, graph_config, subgraph_config
     should_fup_with_questions = True
 
     _config_filepath = config_filepath
@@ -226,6 +229,10 @@ def run_chat_loop(root_dir: Path,
         "configurable": 
             {"thread_id": THREAD_ID}
             })
+    subgraph_config = {
+        "configurable": 
+            {"thread_id": uuid.uuid4()}
+    }
     console.print("\nEnter your messages (available commands: /summarize , /fup [question id], /dd [cell id]. type /exit to quit):")
 
     while True:
@@ -236,13 +243,20 @@ def run_chat_loop(root_dir: Path,
             if user_input.lower() == "/exit":
                 print("Goodbye!")
                 break
-            # add a clause looking for command /grid followed by index, and then print that index. AI!
             if user_input.lower().startswith("/fup"):
                 try:
                     fup_index = int(user_input.split()[1]) - 1
                     user_input = state.values["next_questions_candidates"][fup_index]
                 except (IndexError, ValueError):
                     print("Invalid follow-up command. Please use /fup [question id].")
+                    continue
+            elif user_input.lower().startswith("/grid"):
+                try:
+                    grid_index = int(user_input.split()[1]) - 1
+                    print(f"Grid index {grid_index}")
+                    grid_subgraph.invoke(Command(resume=3), config=subgraph_config)
+                except (IndexError, ValueError):
+                    print("Invalid grid command. Please use /grid [option id].")
                     continue
             elif user_input.lower().startswith("/summarize"):
                 should_fup_with_questions = False
@@ -274,7 +288,7 @@ def run_chat_loop(root_dir: Path,
                 if should_fup_with_questions:
                     state = app.get_state(graph_config)
                     if state.values["next_questions_candidates"] is not None:
-                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [id]] command[/bold blue]")
+                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
                         for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
                             console.print(f"[{idx}]: {question}")
                 else:
