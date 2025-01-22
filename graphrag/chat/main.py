@@ -23,6 +23,9 @@ from rich.console import Console
 from rich.markdown import Markdown
 from graphrag.chat.awel_logo import AWEL_LOGO
 from graphrag.chat.grid_graph import grid_subgraph
+from graphrag.chat.prompts import DIMENTION_EXTRACTION
+from langchain_core.prompts import PromptTemplate
+
 
 class ExtendedMessagesState(TypedDict):
     config_filepath: Path | None
@@ -58,7 +61,7 @@ progress_logger: ProgressLogger | None = LoggerFactory().create_logger(LoggerTyp
 info, error, success = _logger(progress_logger)
 
 workflow = StateGraph(state_schema=ExtendedMessagesState)
-SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation."
+SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation If it's a business querion, use tools."
 openai_api_key: str | None = ""
 config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
@@ -185,8 +188,21 @@ def route_tools(
     else:
         raise ValueError(f"No messages found in input state to tool_edge: {state}")
     if hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0:
-        return "tools"
-    return END
+        return "call_tools"
+    return "call_fup_candidate_questions"
+
+def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
+    prompt_template = PromptTemplate.from_template(DIMENTION_EXTRACTION)
+    prompt = prompt_template.invoke({
+        "user_query" : state["messages"], # extract the most recent message of type HumanMessage. AI!
+        "response" : state["response"],
+        "json_schema" : state["json_schema"]
+    })
+    response = llm.invoke(prompt)
+    import json
+    json_content = response.content.strip().strip('```').strip('json').strip()
+    state["dimensions"] = json.loads(json_content) 
+    state['fup_dimension_index'] = interrupt({"dimensions" : state["dimensions"]})
 
 def command_router(
     state: ExtendedMessagesState,
@@ -229,9 +245,13 @@ def display_results(state: ExtendedMessagesState):
 # Define the node and edge
 workflow.add_node("call_model", call_model)
 workflow.add_node("display_results", display_results)
+workflow.add_node("call_tools", call_tools)
+workflow.add_node("call_fup_candidate_questions", call_candidate_fup_questions)
 workflow.add_conditional_edges(START, command_router)
+workflow.add_conditional_edges("call_model", route_tools)
+workflow.add_edge("call_tools", "call_model")
+workflow.add_edge("call_fup_candidate_questions", "display_results")
 
-workflow.add_edge("call_model", "display_results")
 
 # Add simple in-memory checkpointer
 memory = MemorySaver()
