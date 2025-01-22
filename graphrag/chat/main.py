@@ -116,7 +116,9 @@ def call_grid(state: ExtendedMessagesState):
         None
     )
     response = grid_subgraph.invoke({
-        "query": recent_human_message.content if recent_human_message else ""
+        "query": recent_human_message.content if recent_human_message else "",
+        "response" : state["messages"][-1].content
+        "json_scheme" :  # assign here a json dump of all classed defined in dealership.py, other than those that start with ListOf. AI!
     })
     print(response["query"])
 
