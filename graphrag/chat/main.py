@@ -63,7 +63,7 @@ config: GraphRagConfig  = GraphRagConfig()
 llm: ChatOpenAI | None = None
 llm_with_tools = None
 THREAD_ID = 1
-grid_dimensions = None
+grid_dimensions: list = []
 
 # Tools call node
 def call_tools(state: ExtendedMessagesState):
@@ -111,6 +111,7 @@ def call_model(state: ExtendedMessagesState):
             }
 
 def call_grid(state: ExtendedMessagesState):
+    global grid_dimensions
     # Find the most recent HumanMessage
     recent_human_message = next(
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
@@ -133,6 +134,8 @@ def call_grid(state: ExtendedMessagesState):
         "VehicleCategory": VehicleCategory.model_json_schema(),
         "MonthYear": MonthYear.model_json_schema()
     })
+
+    console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
     response = grid_subgraph.invoke({
         "query": recent_human_message.content if recent_human_message else "",
@@ -266,7 +269,7 @@ def run_chat_loop(root_dir: Path,
                 if should_fup_with_questions:
                     state = app.get_state(graph_config)
                     if state.values["next_questions_candidates"] is not None:
-                        console.print("\n\nYou can followup with any of these questions by using the /fup [id] command")
+                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [id] command[/bold blue]")
                         for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
                             console.print(f"[{idx}]: {question}")
                 else:
@@ -274,7 +277,7 @@ def run_chat_loop(root_dir: Path,
                 
                 if grid_dimensions:
                     console.print("\n[bold blue]Do you want me to display any of these grids?[/bold blue]")
-                    for dimension in grid_dimensions:
+                    for dimension in grid_dimensions: # update display to show [idx] before each line. AI!
                         dimension_name = dimension.get("dimension", "Unknown Dimension")
                         values = dimension.get("values", [])
                         console.print(f"[bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
