@@ -29,10 +29,7 @@ def retrieve_candidate_dimensions(state: GridSubgraphState):
     import json
     json_content = response.content.strip().strip('```').strip('json').strip()
     state["dimensions"] = json.loads(json_content) 
-    try:
-        raise Exception(interrupt({"message" : "Hello World"}))
-    except  Exception as e:
-        return e.args[0][0].value
+    state['fup_dimension_index'] = interrupt({"dimensions" : state["dimensions"]})
 
 def generate_fup_query(state: GridSubgraphState):
     print(f"Dimension choses in {state['fup_dimension_index']}")

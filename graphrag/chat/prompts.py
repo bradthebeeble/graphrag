@@ -134,7 +134,7 @@ DIMENTION_EXTRACTION = """
                 "year_over_year_growth": "float"
             }}
         }}
-    Output: [{'MonthYear', ['Jan2024', 'Feb2024', 'Mar2024', 'Apr2024', 'May2024'], 90}, {'DealershipVenue', ['Boston', 'Cleveland', 'Pittsburgh'], 85}, {'VehicleCategory', ['Compact SUV','Mid-size sedan', 'Luxury Sedan'],78}, {'CustomerReviewOfVehicle',['issues related to warranty claims mishandling'],60},{'Inisght',['improving customer service and introduced digital service tracking systems'],50}]
+    Output: [{{'MonthYear', ['Jan2024', 'Feb2024', 'Mar2024', 'Apr2024', 'May2024'], 90}}, {{'DealershipVenue', ['Boston', 'Cleveland', 'Pittsburgh'], 85}}, {{'VehicleCategory', ['Compact SUV','Mid-size sedan', 'Luxury Sedan'],78}}, {{'CustomerReviewOfVehicle',['issues related to warranty claims mishandling'],60}},{{'Insight',['improving customer service and introduced digital service tracking systems'],50}}]
 
     Example 2:
     User Query: What are the customer satisfaction trends for the past year?
@@ -166,21 +166,21 @@ DIMENTION_EXTRACTION = """
             }}
         }}
     Output: [
-        {
+        {{
             "dimension": "Quarter",
             "values": ["Q1", "Q2", "Q3", "Q4"],
             "relevance": 95
-        },
-        {
+        }},
+        {{
             "dimension": "CustomerSatisfaction",
             "values": ["3.5", "3.8", "4.0", "4.2"],
             "relevance": 90
-        },
-        {
+        }},
+        {{
             "dimension": "Venue",
             "values": ["Boston", "New York"],
             "relevance": 85
-        }
+        }}
     ]
 
     Example 3:
@@ -210,21 +210,21 @@ DIMENTION_EXTRACTION = """
             }}
         }}
     Output: [
-        {
+        {{
             "dimension": "VehicleCategory",
             "values": ["Compact SUVs", "Mid-size Sedans", "Luxury Sedans"],
             "relevance": 92
-        },
-        {
+        }},
+        {{
             "dimension": "SalesVolume",
             "values": ["3,418", "1,508", "1,478"],
             "relevance": 88
-        },
-        {
+        }},
+        {{
             "dimension": "Trend",
             "values": ["Fuel Efficiency", "Hybrid Models"],
             "relevance": 80
-        }
+        }}
     ]
 
     Use these examples to guide your extraction process.

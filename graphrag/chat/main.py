@@ -147,13 +147,10 @@ def call_grid(state: ExtendedMessagesState):
             "response": state["messages"][-1].content,
             "json_schema": json_schema,
             "model" : llm
-        },
-                    config=subgraph_config)
+        })
         print("Returned without an exception")
     except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] {str(e)}")
-        grid_dimensions = []
-    # grid_dimensions = response["dimensions"]
+        grid_dimensions = e.args[0][0].value["dimensions"]
 
     
 
