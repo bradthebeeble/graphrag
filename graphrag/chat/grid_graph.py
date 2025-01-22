@@ -23,8 +23,9 @@ def retrieve_candidate_dimensions(state: GridSubgraphState):
         "json_schema" : state["json_schema"]
     })
     response = llm.invoke(prompt)
-    # response.content is a strigifed json object. parse it back to json and display it as an object. AI!
-    print(response)
+    import json
+    response_content = json.loads(response.content)
+    print(response_content)
     return {"query": "What is your name?"}
 
 
