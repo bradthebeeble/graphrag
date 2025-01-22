@@ -137,6 +137,7 @@ def call_grid(state: ExtendedMessagesState):
 
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
+    # add a try block to response call. AI!
     response = grid_subgraph.invoke({
         "query": recent_human_message.content if recent_human_message else "",
         "response": state["messages"][-1].content,
@@ -241,7 +242,7 @@ def run_chat_loop(root_dir: Path,
                     continue
             elif user_input.lower().startswith("/summarize"):
                 should_fup_with_questions = False
-                user_input = "Summarize key themse of data. Use global query tool. Respond in a single short paragraph."
+                user_input = "Summarize key themes of data. Use global query tool. Respond in a single short paragraph."
 
             if user_input:
                 ai_msg = app.invoke(
@@ -269,20 +270,20 @@ def run_chat_loop(root_dir: Path,
                 if should_fup_with_questions:
                     state = app.get_state(graph_config)
                     if state.values["next_questions_candidates"] is not None:
-                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [id] command[/bold blue]")
+                        console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
                         for idx, question in enumerate(state.values["next_questions_candidates"], start=1):
                             console.print(f"[{idx}]: {question}")
                 else:
                     should_fup_with_questions = True
                 
                 if grid_dimensions:
-                    console.print("\n[bold blue]Do you want me to display any of these grids?[/bold blue]")
+                    console.print("\n[bold blue]You can ask me to display a grid across any of these dimensions by using /grid [[id]]?[/bold blue]")
                     for idx, dimension in enumerate(grid_dimensions, start=1):
                         dimension_name = dimension.get("dimension", "Unknown Dimension")
                         values = dimension.get("values", [])
                         console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
 
-                console.print("\n\n===============================================================================\n\n")
+                console.print("\n\n=======================================================================================\n\n")
 
 
         except KeyboardInterrupt:
