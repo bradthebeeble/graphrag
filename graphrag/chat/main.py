@@ -115,10 +115,28 @@ def call_grid(state: ExtendedMessagesState):
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
         None
     )
+    from graphrag.awel.templates.dealership import (
+        Customer, VehicleModel, CustomerReviewOfVehicle, DealershipVenue,
+        DealerNetwork, Insight, SalesMetric, VehicleCategory, MonthYear
+    )
+    import json
+
+    json_scheme = json.dumps({
+        "Customer": Customer.schema(),
+        "VehicleModel": VehicleModel.schema(),
+        "CustomerReviewOfVehicle": CustomerReviewOfVehicle.schema(),
+        "DealershipVenue": DealershipVenue.schema(),
+        "DealerNetwork": DealerNetwork.schema(),
+        "Insight": Insight.schema(),
+        "SalesMetric": SalesMetric.schema(),
+        "VehicleCategory": VehicleCategory.schema(),
+        "MonthYear": MonthYear.schema()
+    })
+
     response = grid_subgraph.invoke({
         "query": recent_human_message.content if recent_human_message else "",
-        "response" : state["messages"][-1].content
-        "json_scheme" :  # assign here a json dump of all classed defined in dealership.py, other than those that start with ListOf. AI!
+        "response": state["messages"][-1].content,
+        "json_scheme": json_scheme
     })
     print(response["query"])
 
