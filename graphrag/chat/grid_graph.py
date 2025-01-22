@@ -24,8 +24,8 @@ def retrieve_candidate_dimensions(state: GridSubgraphState):
     })
     response = llm.invoke(prompt)
     import json
-    # response.content starts with ```json  and ends with ``` - only json parse what's between , AI!
-    response_content = json.loads(response.content)
+    json_content = response.content.strip().strip('```').strip('json').strip()
+    response_content = json.loads(json_content)
     print(response_content)
     return {"query": "What is your name?"}
 
