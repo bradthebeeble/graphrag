@@ -193,8 +193,12 @@ def route_tools(
 
 def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
     prompt_template = PromptTemplate.from_template(DIMENTION_EXTRACTION)
+    recent_human_message = next(
+        (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
+        None
+    )
     prompt = prompt_template.invoke({
-        "user_query" : state["messages"], # extract the most recent message of type HumanMessage. AI!
+        "user_query" : recent_human_message.content if recent_human_message else "",
         "response" : state["response"],
         "json_schema" : state["json_schema"]
     })
