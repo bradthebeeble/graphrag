@@ -171,12 +171,11 @@ def call_db(state: ExtendedMessagesState):
     })
     import pandas as pd
 
-    result_data = [item['dv'] for item in response["result"]]
-    row_headers = [key for key in result_data[0].keys() if key not in {'title', 'human_readable_id', 'dirty', 'id'}]
-    transformed_data =  {
-        key: [row[key] for row in result_data if key not in {'title', 'human_readable_id', 'dirty', 'id'}]
-        for key in result_data[0].keys()
-    }
+    omit_fields = {'title', 'human_readable_id', 'dirty', 'id'}
+    original_data = [item['dv'] for item in response["result"]]
+    # remove from original_data, keys that are in omit_fields. AI!
+    row_headers = [key for key in original_data[0].keys() if key not in omit_fields]
+    transformed_data =  {key: [row[key] for row in original_data] for key in original_data[0].keys()}
     df = pd.DataFrame(transformed_data)
     formatted_table = pd.DataFrame({row: df[row].values for row in row_headers}, index=row_headers)
     formatted_table.columns = df["title"]
