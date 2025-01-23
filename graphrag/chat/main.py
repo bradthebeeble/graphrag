@@ -195,7 +195,9 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
 def command_router(
     state: ExtendedMessagesState,
 ):
-    # check if state["next_command"] is not None; if it's a grid command, return "call_grid"; else return "call_model". AI!
+    if state.get("next_command") is not None:
+        if state["next_command"] == "grid":
+            return "call_grid"
     return "call_model"
 
 def display_results(state: ExtendedMessagesState):
