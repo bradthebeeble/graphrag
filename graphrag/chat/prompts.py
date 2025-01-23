@@ -231,3 +231,69 @@ DIMENTION_EXTRACTION = """
 
 
 """
+
+QUERY_GENERATION = """
+
+    You are tasked with generating a natural language query based on the provided dimension. A 'dimension' is a structured representation of data that can be queried.
+
+    Inputs:
+        1. A user query: {user_query}
+        2. A response to the user query: {response}
+        3. A JSON dump representing a list of entities and their properties: {json_schema}
+        4. A dimension: {dimension}
+        5. A count: {count}
+
+    Your response should be a natural language query that retrieves data based on the dimension. Limit the number of results based on the count parameter.
+
+    Example 1:
+    User Query: Tell me about my sales performance in 2024 in the Boston venue
+    Response: 
+            In 2024, Anaconda Automotive's Boston flagship location achieved impressive sales figures, contributing to the broader success of the dealership network. The Boston venue    
+            sold a total of 8,156 units, which was a vital part of Anaconda's overall sales total of 48,932 units, marking a 16.8% increase from the previous year.                       
+
+    JSON Dump: 
+        {{
+            "DealershipVenue": {{
+                "id": "int",
+                "human_readable_id": "int",
+                "city": "str",
+                "company_name": "str",
+                "revenue_per_sqft": "Optional[float]",
+                "annual_units_sold": "Optional[int]",
+                "year": "Optional[int]",
+                "is_strategic_location": "Optional[bool]",
+                "notes": "Optional[str]"
+            }}
+        }}
+    Dimension: {{'DealershipVenue', ['Boston', 'Cleveland', 'Pittsburgh'], 85}}
+    Count: 3
+    Output: "Show me 3 dealership venues, including Boston, Cleveland, and Pittsburgh."
+
+    Example 2:
+    User Query: How did the different vehicle categories perform in 2024?
+    Response: 
+            In 2024, compact SUVs led the sales with 3,418 units, followed by mid-size sedans with 1,508 units, and luxury sedans with 1,478 units. 
+
+    JSON Dump: 
+        {{
+            "VehicleCategory": {{
+                "id": "int",
+                "human_readable_id": "int",
+                "name": "str",
+                "description": "Optional[str]",
+                "sales_units": "int",
+                "year": "int",
+                "trends": "Optional[List[str]]"
+            }}
+        }}
+    Dimension: {{
+        "dimension": "VehicleCategory",
+        "values": ["Compact SUVs", "Mid-size Sedans", "Luxury Sedans"],
+        "relevance": 92
+    }}
+    Count: 5
+    Output: "Show me 5 vehicle categories, including Compact SUVs, Mid-size Sedans, and Luxury Sedans."
+
+    Use these examples to guide your query generation process.
+
+"""
