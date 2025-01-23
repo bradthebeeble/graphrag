@@ -22,8 +22,7 @@ from langgraph.types import Command
 from rich.console import Console
 from rich.markdown import Markdown
 from graphrag.chat.awel_logo import AWEL_LOGO
-from graphrag.chat.grid_graph import grid_subgraph
-from graphrag.chat.prompts import DIMENTION_EXTRACTION
+from graphrag.chat.prompts import DIMENTION_EXTRACTION, QUERY_GENERATION
 from langchain_core.prompts import PromptTemplate
 
 
@@ -168,6 +167,8 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
         (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
         None
     )
+    # update the code below (from START OF CODE to END OF CODE), so instead of explicitly importing classed like Customer or VehicleModel it will use reflection on the dealership file. AI!
+    # START OF CODE
     from graphrag.awel.templates.dealership import (
         Customer, VehicleModel, CustomerReviewOfVehicle, DealershipVenue,
         DealerNetwork, Insight, SalesMetric, VehicleCategory, MonthYear
@@ -184,6 +185,7 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
         "VehicleCategory": VehicleCategory.model_json_schema(),
         "MonthYear": MonthYear.model_json_schema()
     })
+    # END OF CODE
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
     prompt = prompt_template.invoke({
