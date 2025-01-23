@@ -117,7 +117,30 @@ def call_model(state: ExtendedMessagesState):
             }
 
 def call_grid(state: ExtendedMessagesState):
-    console.print(f"[bold red]AWEL:[/bold red] Displaying Grid for index {state['next_command_idx']}")
+    global llm, json_schema
+    COUNT = 5
+    prompt_template = PromptTemplate.from_template(QUERY_GENERATION)
+    recent_human_message = next(
+        (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
+        None
+    )
+    recent_ai_message = next(
+        (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
+        None
+    )
+    
+    console.print("[bold red]AWEL:[/bold red] Generting grid query")
+    idx = state["next_command_idx"]
+    # check that idx is not None. If it is , continue (exit func). use try for that. AI!
+    prompt = prompt_template.invoke({
+        "user_query" : recent_human_message.content if recent_human_message else "",
+        "response" : recent_ai_message.content if recent_ai_message else "",
+        "json_schema" : json_schema,
+        "dimension" : state["dimensions"][idx]
+    })
+    response = llm.invoke(prompt)
+    json_content = response.content.strip().strip('```').strip('json').strip()
+    return {"dimensions" :  json.loads(json_content) }
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
@@ -157,7 +180,7 @@ def route_tools(
     return "call_fup_candidate_questions"
 
 def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
-    global llm
+    global llm, json_schema
     prompt_template = PromptTemplate.from_template(DIMENTION_EXTRACTION)
     recent_human_message = next(
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
@@ -167,14 +190,7 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
         (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
         None
     )
-    import json
-    import inspect
-    import graphrag.awel.templates.dealership as dealership
-    json_schema = json.dumps({
-        name: cls.model_json_schema()
-        for name, cls in inspect.getmembers(dealership, inspect.isclass)
-        if not name.startswith('ListOf')
-    })
+    
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
     prompt = prompt_template.invoke({
@@ -254,7 +270,7 @@ INIITAL_USER_PROMPT = f"Summarize the key points in this body of knowledge. Use 
 def run_chat_loop(root_dir: Path,
                   config_filepath: Path | None):
     """Run an interactive chat loop that echoes user input."""
-    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir, graph_config, subgraph_config
+    global llm, openai_api_key, llm_with_tools, _config_filepath, _root_dir, graph_config, subgraph_config, json_schema
 
     _config_filepath = config_filepath
     _root_dir = root_dir
@@ -264,10 +280,15 @@ def run_chat_loop(root_dir: Path,
         "configurable": 
             {"thread_id": THREAD_ID}
             })
-    subgraph_config = RunnableConfig({
-        "configurable": 
-            {"thread_id": uuid.uuid4()}
+    import json
+    import inspect
+    import graphrag.awel.templates.dealership as dealership
+    json_schema = json.dumps({
+        name: cls.model_json_schema()
+        for name, cls in inspect.getmembers(dealership, inspect.isclass)
+        if not name.startswith('ListOf')
     })
+   
     console.print("\nEnter your messages (available commands: /summarize , /fup [question id], /dd [cell id]. type /exit to quit):")
 
     while True:
