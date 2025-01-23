@@ -102,9 +102,9 @@ def call_tools(state: ExtendedMessagesState):
                     additional_kwargs={"error": e},
                 )
             )
-            
-    # if no tool calls, then return should also include key "last_response" with the last_message as val. AI!
-    return {"messages": output_messages}
+    
+    if not output_messages:
+        return {"messages": output_messages, "last_response": last_message.content}
 
 # Define the function that calls the model
 def call_model(state: ExtendedMessagesState):
