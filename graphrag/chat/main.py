@@ -195,7 +195,7 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
 def command_router(
     state: ExtendedMessagesState,
 ):
-    # for now, just return call_model
+    # check if state["next_command"] is not None; if it's a grid command, return "call_grid"; else return "call_model". AI!
     return "call_model"
 
 def display_results(state: ExtendedMessagesState):
@@ -285,6 +285,7 @@ def run_chat_loop(root_dir: Path,
                     command_arg = int(parts[1])
             else:
                 command = None
+                command_arg = None
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
@@ -316,7 +317,8 @@ def run_chat_loop(root_dir: Path,
                                 content=user_input
                             ),
                         ],
-                        "command" : command
+                        "command" : command,
+                        "next_command_idx" : command_arg
                     },
                     config=graph_config,
                 )
