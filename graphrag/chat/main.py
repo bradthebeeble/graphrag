@@ -2,7 +2,7 @@ import json
 from typing import Annotated, Any, cast
 import uuid
 from langchain_openai import ChatOpenAI
-from pydantic import SecretStr
+from pydantic import BaseModel, SecretStr
 from graphrag.chat.query_tools_defs import  global_query, local_query
 from graphrag.cli.query import run_question_generator
 from graphrag.config.load_config import load_config
@@ -278,10 +278,11 @@ def run_chat_loop(root_dir: Path,
     import json
     import inspect
     import graphrag.awel.templates.dealership as dealership
+    # update the code above. it should inspect all class definitions in dealership; filter classes that start with ListOf, and create a json dump of the rest. AI!
     json_schema = json.dumps({
         name: cls.model_json_schema()
         for name, cls in inspect.getmembers(dealership, inspect.isclass)
-        if not issubclass(cls, BaseClass) and cls is not BaseClass
+        if not isinstance(cls,BaseModel)
         if not name.startswith('ListOf')
     })
    
