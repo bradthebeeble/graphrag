@@ -278,11 +278,11 @@ def run_chat_loop(root_dir: Path,
     import json
     import inspect
     import graphrag.awel.templates.dealership as dealership
-    # update the code above. it should inspect all class definitions in dealership; filter classes that start with ListOf, and create a json dump of the rest. AI!
     json_schema = json.dumps({
         name: cls.model_json_schema()
         for name, cls in inspect.getmembers(dealership, inspect.isclass)
-        if not isinstance(cls,BaseModel)
+        if not name.startswith('ListOf')
+        if issubclass(cls, BaseModel) and cls is not BaseModel
         if not name.startswith('ListOf')
     })
    
