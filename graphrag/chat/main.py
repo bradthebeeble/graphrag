@@ -34,6 +34,7 @@ class ExtendedMessagesState(TypedDict):
     next_questions_candidates: list[str] 
     dimensions: list[dict[str, Any]]
     next_command: str
+    next_command_idx: int
 
 
 log = logging.getLogger(__name__)
@@ -276,7 +277,7 @@ def run_chat_loop(root_dir: Path,
             state = app.get_state(graph_config)
             user_input = console.input("\n[bold yellow]You:[/bold yellow] ").strip()
             command = None
-            if user_input.startswith("/"):
+            if user_input.startswith("/"): # in this case, also assign the integer that follows the command to a var. AI!
                 command = user_input.split()[0][1:]
             else:
                 command = None
@@ -311,6 +312,7 @@ def run_chat_loop(root_dir: Path,
                                 content=user_input
                             ),
                         ],
+                        "command" : command
                     },
                     config=graph_config,
                 )
