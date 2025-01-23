@@ -142,7 +142,7 @@ def call_grid(state: ExtendedMessagesState):
             "count" : COUNT
         })
         response = llm.invoke(prompt)
-        # print the ressult from response. AI!
+        console.print(f"[bold green]Grid Query Result:[/bold green] {response.content}")
     except Exception as e:
         log.error(f"Error generating grid query: {e}")
         return
