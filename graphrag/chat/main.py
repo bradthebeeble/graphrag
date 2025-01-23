@@ -103,6 +103,7 @@ def call_tools(state: ExtendedMessagesState):
                 )
             )
             
+    # if no tool calls, then return should also include key "last_response" with the last_message as val. AI!
     return {"messages": output_messages}
 
 # Define the function that calls the model
@@ -234,9 +235,6 @@ def display_results(state: ExtendedMessagesState):
             console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
 
     console.print("\n\n=======================================================================================\n\n")
-    return {
-        "last_response" : llm_response
-    }
 
 # Define the node and edge
 workflow.add_node("call_model", call_model)
@@ -283,7 +281,6 @@ def run_chat_loop(root_dir: Path,
         for name, cls in inspect.getmembers(dealership, inspect.isclass)
         if not name.startswith('ListOf')
         if issubclass(cls, BaseModel) and cls is not BaseModel
-        if not name.startswith('ListOf')
     })
    
     console.print("\nEnter your messages (available commands: /summarize , /fup [question id], /dd [cell id]. type /exit to quit):")
