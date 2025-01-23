@@ -34,6 +34,8 @@ class ExtendedMessagesState(TypedDict):
     dimensions: list[dict[str, Any]]
     next_command: str
     next_command_idx: int
+    last_user_query: str
+    last_response: str
 
 
 log = logging.getLogger(__name__)
@@ -120,14 +122,6 @@ def call_grid(state: ExtendedMessagesState):
     global llm, json_schema
     COUNT = 5
     prompt_template = PromptTemplate.from_template(QUERY_GENERATION)
-    recent_human_message = next(
-        (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
-        None
-    )
-    recent_ai_message = next(
-        (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
-        None
-    )
     
     console.print("[bold red]AWEL:[/bold red] Generting grid query")
     idx = state["next_command_idx"]
@@ -135,10 +129,10 @@ def call_grid(state: ExtendedMessagesState):
         if idx is None:
             return
         prompt = prompt_template.invoke({
-            "user_query" : recent_human_message.content if recent_human_message else "",
-            "response" : recent_ai_message.content if recent_ai_message else "",
+            "user_query" : state["last_user_query"],
+            "response" : state["last_response"],
             "json_schema" : json_schema,
-            "dimension" : state["dimensions"][idx]
+            "dimension" : state["dimensions"][idx],
             "count" : COUNT
         })
         response = llm.invoke(prompt)
@@ -187,20 +181,12 @@ def route_tools(
 def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
     global llm, json_schema
     prompt_template = PromptTemplate.from_template(DIMENTION_EXTRACTION)
-    recent_human_message = next(
-        (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
-        None
-    )
-    recent_ai_message = next(
-        (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
-        None
-    )
     
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
     prompt = prompt_template.invoke({
-        "user_query" : recent_human_message.content if recent_human_message else "",
-        "response" : recent_ai_message.content if recent_ai_message else "",
+        "user_query" : state["last_user_query"],
+        "response" : state["last_response"],
         "json_schema" : json_schema
     })
     response = llm.invoke(prompt)
@@ -228,7 +214,8 @@ def display_results(state: ExtendedMessagesState):
         # Optionally, normalize whitespace
         cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
         return cleaned
-    markdown = clean_markdown(state['messages'][-1].content)
+    llm_response = state['messages'][-1].content
+    markdown = clean_markdown(llm_response)
     console.print(Markdown(markdown))
     if should_fup_with_questions:
         if "next_questions_candidates" in state and state["next_questions_candidates"] is not None:
@@ -247,6 +234,9 @@ def display_results(state: ExtendedMessagesState):
             console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
 
     console.print("\n\n=======================================================================================\n\n")
+    return {
+        "last_response" : llm_response
+    }
 
 # Define the node and edge
 workflow.add_node("call_model", call_model)
@@ -289,7 +279,7 @@ def run_chat_loop(root_dir: Path,
     import inspect
     import graphrag.awel.templates.dealership as dealership
     json_schema = json.dumps({
-        name: cls.model_json_schema()
+        name: cls.model_json_schema() # model_json_schema() must be called on a subclass of BaseModel, not BaseModel itself.. AI!
         for name, cls in inspect.getmembers(dealership, inspect.isclass)
         if not name.startswith('ListOf')
     })
@@ -334,7 +324,8 @@ def run_chat_loop(root_dir: Path,
                             ),
                         ],
                         "next_command" : command,
-                        "next_command_idx" : command_arg
+                        "next_command_idx" : command_arg,
+                        "last_user_query" : user_input
                     },
                     config=graph_config,
                 )
