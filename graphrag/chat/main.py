@@ -209,36 +209,38 @@ def display_results(state: ExtendedMessagesState):
     should_fup_with_questions = True
 
     console.print("[bold magenta]AI:[/bold magenta]")
-    # everything that follows only display of state["next_command"] is not /grid. Otherwise; just display "Grid Results", AI!
     import re
-    def clean_markdown(raw_markdown):
-        # Remove surrounding quotes
-        cleaned = raw_markdown.strip('"').strip("'")
-        # Replace literal "\n" with actual newlines
-        cleaned = cleaned.replace("\\n", "\n")
-        # Optionally, normalize whitespace
-        cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
-        return cleaned
-    llm_response = state['messages'][-1].content
-    markdown = clean_markdown(llm_response)
-    console.print(Markdown(markdown))
-    if should_fup_with_questions:
-        if "next_questions_candidates" in state and state["next_questions_candidates"] is not None:
-            console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
-            for idx, question in enumerate(state["next_questions_candidates"], start=1):
-                console.print(f"[{idx}]: {question}")
+    if state.get("next_command") == "grid":
+        console.print("Grid Results")
     else:
-        should_fup_with_questions = True
-    
-    grid_dimensions = state["dimensions"]
-    if grid_dimensions:
-        console.print("\n[bold blue]You can ask me to display a grid across any of these dimensions by using /grid [[id]]?[/bold blue]")
-        for idx, dimension in enumerate(grid_dimensions, start=1):
-            dimension_name = dimension.get("dimension", "Unknown Dimension")
-            values = dimension.get("values", [])
-            console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
+        def clean_markdown(raw_markdown):
+            # Remove surrounding quotes
+            cleaned = raw_markdown.strip('"').strip("'")
+            # Replace literal "\n" with actual newlines
+            cleaned = cleaned.replace("\\n", "\n")
+            # Optionally, normalize whitespace
+            cleaned = re.sub(r'\s+\n', '\n', cleaned).strip()
+            return cleaned
+        llm_response = state['messages'][-1].content
+        markdown = clean_markdown(llm_response)
+        console.print(Markdown(markdown))
+        if should_fup_with_questions:
+            if "next_questions_candidates" in state and state["next_questions_candidates"] is not None:
+                console.print("\n\n[bold blue]You can followup with any of these questions by using the /fup [[id]] command[/bold blue]")
+                for idx, question in enumerate(state["next_questions_candidates"], start=1):
+                    console.print(f"[{idx}]: {question}")
+        else:
+            should_fup_with_questions = True
 
-    console.print("\n\n=======================================================================================\n\n")
+        grid_dimensions = state["dimensions"]
+        if grid_dimensions:
+            console.print("\n[bold blue]You can ask me to display a grid across any of these dimensions by using /grid [[id]]?[/bold blue]")
+            for idx, dimension in enumerate(grid_dimensions, start=1):
+                dimension_name = dimension.get("dimension", "Unknown Dimension")
+                values = dimension.get("values", [])
+                console.print(f"[{idx}] [bold green]{dimension_name}:[/bold green] {', '.join(values[:5])}...")
+
+        console.print("\n\n=======================================================================================\n\n")
 
 # Define the node and edge
 workflow.add_node("call_model", call_model)
