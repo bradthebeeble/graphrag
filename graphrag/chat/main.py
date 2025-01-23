@@ -169,8 +169,12 @@ def call_db(state: ExtendedMessagesState):
     response = chain.invoke({
         "query" : state["generated_db_query"]
     })
-    # response["result"] is a json array; each elm is a single key 'dv' and an obj; map it to an array without the 'dv'. Then load is into a pandas dataframe. AI!
-    print(response["result"])
+    import pandas as pd
+
+    # response["result"] is a json array; each elm is a single key 'dv' and an obj; map it to an array without the 'dv'. Then load is into a pandas dataframe.
+    result_data = [item['dv'] for item in response["result"]]
+    df = pd.DataFrame(result_data)
+    print(df)
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
