@@ -173,8 +173,10 @@ def call_db(state: ExtendedMessagesState):
 
     result_data = [item['dv'] for item in response["result"]]
     row_headers = [key for key in result_data[0].keys() if key not in {'title', 'human_readable_id', 'dirty', 'id'}]
-    # remove from result_data, all the key/values that key is one of {'title', 'human_readable_id', 'dirty', 'id'}. AI!
-    transformed_data =  {key: [row[key] for row in result_data] for key in result_data[0].keys()}
+    transformed_data =  {
+        key: [row[key] for row in result_data if key not in {'title', 'human_readable_id', 'dirty', 'id'}]
+        for key in result_data[0].keys()
+    }
     df = pd.DataFrame(transformed_data)
     formatted_table = pd.DataFrame({row: df[row].values for row in row_headers}, index=row_headers)
     formatted_table.columns = df["title"]
