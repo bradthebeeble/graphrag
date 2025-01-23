@@ -33,6 +33,7 @@ class ExtendedMessagesState(TypedDict):
     messages: Annotated[list, add_messages]
     next_questions_candidates: list[str] 
     dimensions: list[dict[str, Any]]
+    next_command: str
 
 
 log = logging.getLogger(__name__)
@@ -114,45 +115,6 @@ def call_model(state: ExtendedMessagesState):
             "root_dir" : _root_dir
             }
 
-def call_grid(state: ExtendedMessagesState):
-    global grid_dimensions, graph_config, subgraph_config
-    # Find the most recent HumanMessage
-    recent_human_message = next(
-        (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
-        None
-    )
-    from graphrag.awel.templates.dealership import (
-        Customer, VehicleModel, CustomerReviewOfVehicle, DealershipVenue,
-        DealerNetwork, Insight, SalesMetric, VehicleCategory, MonthYear
-    )
-    import json
-
-    json_schema = json.dumps({
-        "Customer": Customer.model_json_schema(),
-        "VehicleModel": VehicleModel.model_json_schema(),
-        "CustomerReviewOfVehicle": CustomerReviewOfVehicle.model_json_schema(),
-        "DealershipVenue": DealershipVenue.model_json_schema(),
-        "DealerNetwork": DealerNetwork.model_json_schema(),
-        "Insight": Insight.model_json_schema(),
-        "SalesMetric": SalesMetric.model_json_schema(),
-        "VehicleCategory": VehicleCategory.model_json_schema(),
-        "MonthYear": MonthYear.model_json_schema()
-    })
-
-    console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
-
-    try:
-        response = grid_subgraph.invoke({
-            "query": recent_human_message.content if recent_human_message else "",
-            "response": state["messages"][-1].content,
-            "json_schema": json_schema,
-            "model" : llm
-        }, config=subgraph_config)
-        print("Returned without an exception")
-    except Exception as e:
-        grid_dimensions = e.args[0][0].value["dimensions"]
-
-    
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
@@ -192,6 +154,7 @@ def route_tools(
     return "call_fup_candidate_questions"
 
 def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
+    global llm
     prompt_template = PromptTemplate.from_template(DIMENTION_EXTRACTION)
     recent_human_message = next(
         (msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
@@ -201,16 +164,32 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
         (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
         None
     )
+    from graphrag.awel.templates.dealership import (
+        Customer, VehicleModel, CustomerReviewOfVehicle, DealershipVenue,
+        DealerNetwork, Insight, SalesMetric, VehicleCategory, MonthYear
+    )
+    import json
+    json_schema = json.dumps({
+        "Customer": Customer.model_json_schema(),
+        "VehicleModel": VehicleModel.model_json_schema(),
+        "CustomerReviewOfVehicle": CustomerReviewOfVehicle.model_json_schema(),
+        "DealershipVenue": DealershipVenue.model_json_schema(),
+        "DealerNetwork": DealerNetwork.model_json_schema(),
+        "Insight": Insight.model_json_schema(),
+        "SalesMetric": SalesMetric.model_json_schema(),
+        "VehicleCategory": VehicleCategory.model_json_schema(),
+        "MonthYear": MonthYear.model_json_schema()
+    })
+    console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
+
     prompt = prompt_template.invoke({
         "user_query" : recent_human_message.content if recent_human_message else "",
         "response" : recent_ai_message.content if recent_ai_message else "",
-        "json_schema" : state["json_schema"]
+        "json_schema" : json_schema
     })
     response = llm.invoke(prompt)
-    import json
     json_content = response.content.strip().strip('```').strip('json').strip()
-    state["dimensions"] = json.loads(json_content) 
-    state['fup_dimension_index'] = interrupt({"dimensions" : state["dimensions"]})
+    return {"dimensions" :  json.loads(json_content) }
 
 def command_router(
     state: ExtendedMessagesState,
@@ -241,6 +220,7 @@ def display_results(state: ExtendedMessagesState):
     else:
         should_fup_with_questions = True
     
+    grid_dimensions = state["dimensions"]
     if grid_dimensions:
         console.print("\n[bold blue]You can ask me to display a grid across any of these dimensions by using /grid [[id]]?[/bold blue]")
         for idx, dimension in enumerate(grid_dimensions, start=1):
@@ -254,11 +234,13 @@ def display_results(state: ExtendedMessagesState):
 workflow.add_node("call_model", call_model)
 workflow.add_node("display_results", display_results)
 workflow.add_node("call_tools", call_tools)
+workflow.add_node("call_retrieve_candidate_dimensions", call_retrieve_candidate_dimensions)
 workflow.add_node("call_fup_candidate_questions", call_candidate_fup_questions)
 workflow.add_conditional_edges(START, command_router)
 workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_model")
-workflow.add_edge("call_fup_candidate_questions", "display_results")
+workflow.add_edge("call_fup_candidate_questions", "call_retrieve_candidate_dimensions")
+workflow.add_edge("call_retrieve_candidate_dimensions", "display_results")
 
 
 # Add simple in-memory checkpointer
@@ -293,6 +275,7 @@ def run_chat_loop(root_dir: Path,
         try:
             state = app.get_state(graph_config)
             user_input = console.input("\n[bold yellow]You:[/bold yellow] ").strip()
+            # define a variable and if user_input is formed /{command}, assign command to var. else - clear var. AI!
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
