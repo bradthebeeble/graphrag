@@ -170,7 +170,7 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
     import json
     import inspect
     import graphrag.awel.templates.dealership as dealership
-
+    # filter classes that start with 'ListOf'. AI!
     json_schema = json.dumps({
         name: cls.model_json_schema()
         for name, cls in inspect.getmembers(dealership, inspect.isclass)
