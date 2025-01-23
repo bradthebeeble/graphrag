@@ -304,14 +304,6 @@ def run_chat_loop(root_dir: Path,
                 except (IndexError, ValueError):
                     print("Invalid follow-up command. Please use /fup [question id].")
                     continue
-            elif user_input.lower().startswith("/grid"):
-                try:
-                    grid_index = int(user_input.split()[1]) - 1
-                    print(f"Grid index {grid_index}")
-                    grid_subgraph.invoke(Command(resume=3), config=subgraph_config)
-                except (IndexError, ValueError):
-                    print("Invalid grid command. Please use /grid [option id].")
-                    continue
             elif user_input.lower().startswith("/summarize"):
                 should_fup_with_questions = False
                 user_input = "Summarize key themes of data. Use global query tool. Respond in a single short paragraph."
@@ -324,7 +316,7 @@ def run_chat_loop(root_dir: Path,
                                 content=user_input
                             ),
                         ],
-                        "command" : command,
+                        "next_command" : command,
                         "next_command_idx" : command_arg
                     },
                     config=graph_config,
