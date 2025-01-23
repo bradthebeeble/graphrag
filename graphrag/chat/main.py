@@ -167,25 +167,14 @@ def call_retrieve_candidate_dimensions(state: ExtendedMessagesState):
         (msg for msg in reversed(state["messages"]) if isinstance(msg, AIMessage)),
         None
     )
-    # update the code below (from START OF CODE to END OF CODE), so instead of explicitly importing classed like Customer or VehicleModel it will use reflection on the dealership file. AI!
-    # START OF CODE
-    from graphrag.awel.templates.dealership import (
-        Customer, VehicleModel, CustomerReviewOfVehicle, DealershipVenue,
-        DealerNetwork, Insight, SalesMetric, VehicleCategory, MonthYear
-    )
     import json
+    import inspect
+    import graphrag.awel.templates.dealership as dealership
+
     json_schema = json.dumps({
-        "Customer": Customer.model_json_schema(),
-        "VehicleModel": VehicleModel.model_json_schema(),
-        "CustomerReviewOfVehicle": CustomerReviewOfVehicle.model_json_schema(),
-        "DealershipVenue": DealershipVenue.model_json_schema(),
-        "DealerNetwork": DealerNetwork.model_json_schema(),
-        "Insight": Insight.model_json_schema(),
-        "SalesMetric": SalesMetric.model_json_schema(),
-        "VehicleCategory": VehicleCategory.model_json_schema(),
-        "MonthYear": MonthYear.model_json_schema()
+        name: cls.model_json_schema()
+        for name, cls in inspect.getmembers(dealership, inspect.isclass)
     })
-    # END OF CODE
     console.print("[bold red]AWEL:[/bold red] Analyzing data for grid display")
 
     prompt = prompt_template.invoke({
