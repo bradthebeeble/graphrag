@@ -178,7 +178,10 @@ def call_db(state: ExtendedMessagesState):
         for item in response["result"]
     ]
     df = pd.DataFrame(original_data)
-    # check shape of df; if it is 0 in any of the dimensionts, display a 'no results' and return. AI!
+    if df.shape[0] == 0 or df.shape[1] == 0:
+        console.print("[bold red]No results found.[/bold red]")
+        return
+
     row_headers = [col for col in df.columns if col != "title"]
     transformed_data = {
         "": row_headers  # First unnamed column for row headers
