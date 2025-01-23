@@ -103,8 +103,8 @@ def call_tools(state: ExtendedMessagesState):
                 )
             )
             
-    # if no tool calls, then return should also include key "last_response" with the last_message as val.
-    # if output_messages is empty, return last_resposne as key and last_message as val. AI!
+    if not output_messages:
+        return {"messages": output_messages, "last_response": last_message.content}
     return {"messages": output_messages}
 
 # Define the function that calls the model
