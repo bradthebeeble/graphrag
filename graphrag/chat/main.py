@@ -113,10 +113,14 @@ def call_model(state: ExtendedMessagesState):
         error("OpenAI API key not configured in LLM settings")
     else:
         response_message = llm_with_tools.invoke(messages)
-        # only if response_message has no tool_calls, also return its content under the "last_response" key. AI!
-        return {
+        return_data = {
             "messages": [response_message],
             "config_filepath" : _config_filepath,
+            "root_dir" : _root_dir
+        }
+        if not hasattr(response_message, "tool_calls") or len(response_message.tool_calls) == 0:
+            return_data["last_response"] = response_message.content
+        return return_data
             "root_dir" : _root_dir
             }
 
