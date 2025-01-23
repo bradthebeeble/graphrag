@@ -24,6 +24,7 @@ from rich.markdown import Markdown
 from graphrag.chat.awel_logo import AWEL_LOGO
 from graphrag.chat.prompts import DIMENTION_EXTRACTION, QUERY_GENERATION
 from langchain_core.prompts import PromptTemplate
+from langchain_neo4j import GraphCypherQAChain, Neo4jGraph
 
 
 class ExtendedMessagesState(TypedDict):
@@ -36,6 +37,8 @@ class ExtendedMessagesState(TypedDict):
     next_command_idx: int
     last_user_query: str
     last_response: str
+    generated_db_query: str
+
 
 
 log = logging.getLogger(__name__)
@@ -141,9 +144,28 @@ def call_grid(state: ExtendedMessagesState):
         })
         response = llm.invoke(prompt)
         console.print(f"[bold green]Grid Query Result:[/bold green] {response.content}")
+        return {
+            "generated_db_query" : response.content
+        }
     except Exception as e:
         log.error(f"Error generating grid query: {e}")
         return
+
+def call_db(state: ExtendedMessagesState):
+    # a check that if state has no key "generated_db_query" or if it's empty string; should return. AI!
+    global openai_api_key
+    graph = Neo4jGraph(url=neo4j_config.uri,
+                        username=neo4j_config.username, 
+                        password=neo4j_config.password,
+    )
+    graph.refresh_schema()
+    chain = GraphCypherQAChain.from_llm(
+        ChatOpenAI(temperature=0, api_key=openai_api_key, model=config.llm.model), graph=graph, verbose=True, allow_dangerous_requests=True
+    )
+    response = chain.invoke({
+        "query" : state["generated_db_query"]
+    })
+    print(response["result"])
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
@@ -247,14 +269,18 @@ workflow.add_node("call_model", call_model)
 workflow.add_node("display_results", display_results)
 workflow.add_node("call_tools", call_tools)
 workflow.add_node("call_grid", call_grid)
+workflow.add_node("call_db", call_db)
 workflow.add_node("call_retrieve_candidate_dimensions", call_retrieve_candidate_dimensions)
 workflow.add_node("call_fup_candidate_questions", call_candidate_fup_questions)
-workflow.add_conditional_edges(START, command_router)
+# workflow.add_conditional_edges(START, command_router)
 workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_model")
 workflow.add_edge("call_fup_candidate_questions", "call_retrieve_candidate_dimensions")
 workflow.add_edge("call_retrieve_candidate_dimensions", "display_results")
-workflow.add_edge("call_grid", "display_results")
+workflow.add_edge("call_grid", "call_db")
+workflow.add_edge("call_db", "display_results")
+workflow.add_edge(START,"call_db") # Just for quick tests
+
 
 
 # Add simple in-memory checkpointer
@@ -301,7 +327,7 @@ def run_chat_loop(root_dir: Path,
                 parts = user_input.split()
                 command = parts[0][1:]
                 if len(parts) > 1 and parts[1].isdigit():
-                    command_arg = int(parts[1])
+                    command_arg = int(parts[1]) -1
             else:
                 command = None
                 command_arg = None
@@ -345,11 +371,12 @@ def chat_cli(
     root_dir: Path,
     config_filepath: Path | None,
 ):
-    global openai_api_key
+    global openai_api_key, neo4j_config
     """Run the pipeline with the given config."""
     config = load_config(root_dir, config_filepath)
 
     openai_api_key = config.llm.api_key
+    neo4j_config = config.neo4j
     if not openai_api_key:
         error("OpenAI API key not configured in LLM settings")
     else:
