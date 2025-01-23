@@ -103,8 +103,6 @@ def call_tools(state: ExtendedMessagesState):
                 )
             )
             
-    if not output_messages:
-        return {"messages": output_messages, "last_response": last_message.content}
     return {"messages": output_messages}
 
 # Define the function that calls the model
@@ -114,8 +112,10 @@ def call_model(state: ExtendedMessagesState):
     if llm_with_tools is None:
         error("OpenAI API key not configured in LLM settings")
     else:
+        response_message = llm_with_tools.invoke(messages)
+        # only if response_message has no tool_calls, also return its content under the "last_response" key. AI!
         return {
-            "messages": [llm_with_tools.invoke(messages)],
+            "messages": [response_message],
             "config_filepath" : _config_filepath,
             "root_dir" : _root_dir
             }
