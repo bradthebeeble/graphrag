@@ -173,7 +173,7 @@ def call_db(state: ExtendedMessagesState):
 
     result_data = [item['dv'] for item in response["result"]]
     df = pd.DataFrame(result_data)
-    # assign to row_header variable, all the keys in result_data other than 'title', 'human_readable_id', 'dirty' and 'id'. AI!
+    row_header = [key for key in result_data[0].keys() if key not in {'title', 'human_readable_id', 'dirty', 'id'}]
     print(df)
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
