@@ -280,7 +280,7 @@ def run_chat_loop(root_dir: Path,
     import graphrag.awel.templates.dealership as dealership
     json_schema = json.dumps({
         name: cls.model_json_schema()
-        for name, cls in inspect.getmembers(dealership, inspect.isclass)
+        for name, cls in inspect.getmembers(dealership, inspect.isclass) # filter BaseClass. AI!
         if not name.startswith('ListOf')
     })
    
