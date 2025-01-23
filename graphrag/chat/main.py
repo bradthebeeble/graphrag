@@ -161,11 +161,15 @@ def call_db(state: ExtendedMessagesState):
     )
     graph.refresh_schema()
     chain = GraphCypherQAChain.from_llm(
-        ChatOpenAI(temperature=0, api_key=openai_api_key, model=config.llm.model), graph=graph, verbose=True, allow_dangerous_requests=True
+        ChatOpenAI(temperature=0, api_key=openai_api_key, model=config.llm.model),
+          graph=graph, verbose=True,
+          allow_dangerous_requests=True,
+          return_direct=True,
     )
     response = chain.invoke({
         "query" : state["generated_db_query"]
     })
+    # response["result"] is a json array; each elm is a single key 'dv' and an obj; map it to an array without the 'dv'. Then load is into a pandas dataframe. AI!
     print(response["result"])
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
@@ -273,14 +277,13 @@ workflow.add_node("call_grid", call_grid)
 workflow.add_node("call_db", call_db)
 workflow.add_node("call_retrieve_candidate_dimensions", call_retrieve_candidate_dimensions)
 workflow.add_node("call_fup_candidate_questions", call_candidate_fup_questions)
-# workflow.add_conditional_edges(START, command_router)
+workflow.add_conditional_edges(START, command_router)
 workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_model")
 workflow.add_edge("call_fup_candidate_questions", "call_retrieve_candidate_dimensions")
 workflow.add_edge("call_retrieve_candidate_dimensions", "display_results")
 workflow.add_edge("call_grid", "call_db")
 workflow.add_edge("call_db", "display_results")
-workflow.add_edge(START,"call_db") # Just for quick tests
 
 
 
