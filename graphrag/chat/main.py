@@ -153,8 +153,8 @@ def call_grid(state: ExtendedMessagesState):
 
 def call_db(state: ExtendedMessagesState):
     global openai_api_key
-    # if not state.get("generated_db_query"):
-        # return
+    if not state.get("generated_db_query"):
+        return
     graph = Neo4jGraph(url=neo4j_config.uri,
                         username=neo4j_config.username,
                         password=neo4j_config.password,
@@ -167,22 +167,30 @@ def call_db(state: ExtendedMessagesState):
           return_direct=True,
     )
     response = chain.invoke({
-        "query" : "show 5 dealership venues" # state["generated_db_query"]
+        "query" :  state["generated_db_query"]
     })
     import pandas as pd
 
-    omit_fields = {'title', 'human_readable_id', 'dirty', 'id'}
+    omit_fields = {'human_readable_id', 'dirty', 'id'}
     original_data = [item['dv'] for item in response["result"]]
     original_data = [
         {k: v for k, v in item['dv'].items() if k not in omit_fields}
         for item in response["result"]
     ]
-    row_headers = [key for key in original_data[0].keys() if key not in omit_fields]
-    transformed_data = {key: [row[key] for row in original_data] for key in original_data[0].keys()}
-    df = pd.DataFrame(transformed_data)
-    formatted_table = pd.DataFrame({row: df[row].values for row in row_headers}, index=row_headers)
-    formatted_table.columns = df["title"]
-    print(formatted_table)
+    df = pd.DataFrame(original_data)
+    # check shape of df; if it is 0 in any of the dimensionts, display a 'no results' and return. AI!
+    row_headers = [col for col in df.columns if col != "title"]
+    transformed_data = {
+        "": row_headers  # First unnamed column for row headers
+    }
+    for index, title in enumerate(df["title"]):
+        transformed_data[title] = [df.iloc[index][col] for col in row_headers]
+    transformed_df = pd.DataFrame(transformed_data)
+    with pd.option_context("display.max_rows", None, "display.max_columns", None):
+        print(transformed_df)
+
+
+
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
@@ -289,14 +297,14 @@ workflow.add_node("call_grid", call_grid)
 workflow.add_node("call_db", call_db)
 workflow.add_node("call_retrieve_candidate_dimensions", call_retrieve_candidate_dimensions)
 workflow.add_node("call_fup_candidate_questions", call_candidate_fup_questions)
-# workflow.add_conditional_edges(START, command_router)
+workflow.add_conditional_edges(START, command_router)
 workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_model")
 workflow.add_edge("call_fup_candidate_questions", "call_retrieve_candidate_dimensions")
 workflow.add_edge("call_retrieve_candidate_dimensions", "display_results")
 workflow.add_edge("call_grid", "call_db")
-workflow.add_edge(START, "call_db") # test
-# workflow.add_edge("call_db", "display_results")
+# workflow.add_edge(START, "call_db") # test
+workflow.add_edge("call_db", "display_results")
 
 
 
