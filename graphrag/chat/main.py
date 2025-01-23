@@ -139,10 +139,10 @@ def call_grid(state: ExtendedMessagesState):
             "response" : recent_ai_message.content if recent_ai_message else "",
             "json_schema" : json_schema,
             "dimension" : state["dimensions"][idx]
+            "count" : COUNT
         })
         response = llm.invoke(prompt)
-        json_content = response.content.strip().strip('```').strip('json').strip()
-        return {"dimensions" :  json.loads(json_content) }
+        # print the ressult from response. AI!
     except Exception as e:
         log.error(f"Error generating grid query: {e}")
         return
