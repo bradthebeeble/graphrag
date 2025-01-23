@@ -277,8 +277,12 @@ def run_chat_loop(root_dir: Path,
             state = app.get_state(graph_config)
             user_input = console.input("\n[bold yellow]You:[/bold yellow] ").strip()
             command = None
-            if user_input.startswith("/"): # in this case, also assign the integer that follows the command to a var. AI!
-                command = user_input.split()[0][1:]
+            command_arg = None
+            if user_input.startswith("/"):
+                parts = user_input.split()
+                command = parts[0][1:]
+                if len(parts) > 1 and parts[1].isdigit():
+                    command_arg = int(parts[1])
             else:
                 command = None
 
