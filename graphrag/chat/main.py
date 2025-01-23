@@ -103,6 +103,7 @@ def call_tools(state: ExtendedMessagesState):
             )
             
     return {"messages": output_messages}
+
 # Define the function that calls the model
 def call_model(state: ExtendedMessagesState):
     global llm_with_tools, openai_api_key, _config_filepath, _root_dir
@@ -116,6 +117,8 @@ def call_model(state: ExtendedMessagesState):
             "root_dir" : _root_dir
             }
 
+def call_grid(state: ExtendedMessagesState):
+    # display a message "displaying Grid", and the index as its stored in "next_command_idx". AI!
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
@@ -237,6 +240,7 @@ def display_results(state: ExtendedMessagesState):
 workflow.add_node("call_model", call_model)
 workflow.add_node("display_results", display_results)
 workflow.add_node("call_tools", call_tools)
+workflow.add_node("call_grid", call_grid)
 workflow.add_node("call_retrieve_candidate_dimensions", call_retrieve_candidate_dimensions)
 workflow.add_node("call_fup_candidate_questions", call_candidate_fup_questions)
 workflow.add_conditional_edges(START, command_router)
@@ -244,6 +248,7 @@ workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_model")
 workflow.add_edge("call_fup_candidate_questions", "call_retrieve_candidate_dimensions")
 workflow.add_edge("call_retrieve_candidate_dimensions", "display_results")
+workflow.add_edge("call_grid", "display_results")
 
 
 # Add simple in-memory checkpointer
