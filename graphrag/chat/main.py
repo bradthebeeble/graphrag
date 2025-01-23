@@ -121,15 +121,13 @@ def call_model(state: ExtendedMessagesState):
         if not hasattr(response_message, "tool_calls") or len(response_message.tool_calls) == 0:
             return_data["last_response"] = response_message.content
         return return_data
-            "root_dir" : _root_dir
-            }
 
 def call_grid(state: ExtendedMessagesState):
     global llm, json_schema
     COUNT = 5
     prompt_template = PromptTemplate.from_template(QUERY_GENERATION)
     
-    console.print("[bold red]AWEL:[/bold red] Generting grid query")
+    console.print("[bold red]AWEL:[/bold red] Generating grid query")
     idx = state["next_command_idx"]
     try:
         if idx is None:
@@ -211,6 +209,7 @@ def display_results(state: ExtendedMessagesState):
     should_fup_with_questions = True
 
     console.print("[bold magenta]AI:[/bold magenta]")
+    # everything that follows only display of state["next_command"] is not /grid. Otherwise; just display "Grid Results", AI!
     import re
     def clean_markdown(raw_markdown):
         # Remove surrounding quotes
