@@ -275,7 +275,11 @@ def run_chat_loop(root_dir: Path,
         try:
             state = app.get_state(graph_config)
             user_input = console.input("\n[bold yellow]You:[/bold yellow] ").strip()
-            # define a variable and if user_input is formed /{command}, assign command to var. else - clear var. AI!
+            command = None
+            if user_input.startswith("/"):
+                command = user_input.split()[0][1:]
+            else:
+                command = None
 
             if user_input.lower() == "/exit":
                 print("Goodbye!")
