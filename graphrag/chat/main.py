@@ -172,10 +172,9 @@ def call_db(state: ExtendedMessagesState):
     import pandas as pd
 
     omit_fields = {'human_readable_id', 'dirty', 'id'}
-    # change the code below, istead takign item['dv'] just take the obj correspoding to the first key. AI!
-    original_data = [item['dv'] for item in response["result"]]
+    original_data = [list(item.values())[0] for item in response["result"]]
     original_data = [
-        {k: v for k, v in item['dv'].items() if k not in omit_fields}
+        {k: v for k, v in list(item.values())[0].items() if k not in omit_fields}
         for item in response["result"]
     ]
     df = pd.DataFrame(original_data)
