@@ -152,10 +152,11 @@ def call_grid(state: ExtendedMessagesState):
         return
 
 def call_db(state: ExtendedMessagesState):
-    # a check that if state has no key "generated_db_query" or if it's empty string; should return. AI!
     global openai_api_key
+    if not state.get("generated_db_query"):
+        return
     graph = Neo4jGraph(url=neo4j_config.uri,
-                        username=neo4j_config.username, 
+                        username=neo4j_config.username,
                         password=neo4j_config.password,
     )
     graph.refresh_schema()
