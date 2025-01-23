@@ -171,9 +171,9 @@ def call_db(state: ExtendedMessagesState):
     })
     import pandas as pd
 
-    # response["result"] is a json array; each elm is a single key 'dv' and an obj; map it to an array without the 'dv'. Then load is into a pandas dataframe.
     result_data = [item['dv'] for item in response["result"]]
     df = pd.DataFrame(result_data)
+    # assign to row_header variable, all the keys in result_data other than 'title', 'human_readable_id', 'dirty' and 'id'. AI!
     print(df)
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
