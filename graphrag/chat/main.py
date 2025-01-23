@@ -131,16 +131,21 @@ def call_grid(state: ExtendedMessagesState):
     
     console.print("[bold red]AWEL:[/bold red] Generting grid query")
     idx = state["next_command_idx"]
-    # check that idx is not None. If it is , continue (exit func). use try for that. AI!
-    prompt = prompt_template.invoke({
-        "user_query" : recent_human_message.content if recent_human_message else "",
-        "response" : recent_ai_message.content if recent_ai_message else "",
-        "json_schema" : json_schema,
-        "dimension" : state["dimensions"][idx]
-    })
-    response = llm.invoke(prompt)
-    json_content = response.content.strip().strip('```').strip('json').strip()
-    return {"dimensions" :  json.loads(json_content) }
+    try:
+        if idx is None:
+            return
+        prompt = prompt_template.invoke({
+            "user_query" : recent_human_message.content if recent_human_message else "",
+            "response" : recent_ai_message.content if recent_ai_message else "",
+            "json_schema" : json_schema,
+            "dimension" : state["dimensions"][idx]
+        })
+        response = llm.invoke(prompt)
+        json_content = response.content.strip().strip('```').strip('json').strip()
+        return {"dimensions" :  json.loads(json_content) }
+    except Exception as e:
+        log.error(f"Error generating grid query: {e}")
+        return
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
