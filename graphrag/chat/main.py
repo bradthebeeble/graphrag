@@ -118,7 +118,7 @@ def call_model(state: ExtendedMessagesState):
             }
 
 def call_grid(state: ExtendedMessagesState):
-    # display a message "displaying Grid", and the index as its stored in "next_command_idx". AI!
+    console.print(f"[bold red]AWEL:[/bold red] Displaying Grid for index {state['next_command_idx']}")
 
 def call_candidate_fup_questions(state: ExtendedMessagesState):
     is_tool_message = isinstance(state["messages"][-2], ToolMessage) if len(state["messages"]) > 1 else False
