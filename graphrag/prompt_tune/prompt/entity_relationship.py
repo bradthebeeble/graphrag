@@ -156,7 +156,7 @@ For each pair of related entities, extract the following information:
 
 Format each relationship as a JSON entry with the following format:
 
-{{"source": <source_entity>, "target": <target_entity>, "relationship": <relationship_type>, <relationship_description>, "relationship_strength": <relationship_strength>}}
+{{"source": <source_entity>, "target": <target_entity>, "relationship_type": <relationship_type>, "relationship_description": <relationship_description>, "relationship_strength": <relationship_strength>}}
 
 3. Return output in {language} as a single list of all JSON entities and relationships identified in steps 1 and 2.
 
