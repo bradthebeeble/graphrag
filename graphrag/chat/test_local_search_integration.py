@@ -29,7 +29,8 @@ def test_local_search_with_prompt_template():
         streaming=False,
         query=query
     )
-    json_response = parse_json_from_markdown(response) # check first resposne is of type str. AI!
+    json_response = parse_json_from_markdown(response)
+    assert isinstance(json_response, str)
 
     
     # Verify response
