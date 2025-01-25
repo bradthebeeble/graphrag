@@ -19,7 +19,7 @@ class TestDistributionTemplate(unittest.TestCase):
    "Jul24", "Aug24", "Sep24", "Oct24", "Nov24", "Dec24"]
         template = get_prompt_template("distribution", {
             "query": query,
-            "distribution_values": distribution_values # convert distribution_values into a strigified json AI!
+            "distribution_values": json.dumps(distribution_values)
         })
         result = template.format()
         print(result)
