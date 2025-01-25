@@ -189,7 +189,7 @@ def call_db(state: ExtendedMessagesState):
     for index, title in enumerate(df["title"]):
         transformed_data[title] = [df.iloc[index][col] for col in row_headers]
     transformed_df = pd.DataFrame(transformed_data)
-    with pd.option_context("display.max_rows", None, "display.max_columns", None):
+    with pd.option_context("display.max_rows", None, "display.max_columns", None, "display.width", 1000):
         print(transformed_df)
 
 

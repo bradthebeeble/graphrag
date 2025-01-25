@@ -244,6 +244,8 @@ QUERY_GENERATION = """
         5. A count: {count}
 
     Your response should be a natural language query that retrieves data based on the dimension. Limit the number of results based on the count parameter.
+    Keep your responses simple and disregard long contexts. For example, prefer : 'Show me 5 vehicle categories for 2024' over 'Show me 5 vehicle categories for 2024 that highlight their sales distribution and consumer preferences'
+    Don't use in your response, terms like 'including ' 
 
     Example 1:
     User Query: Tell me about my sales performance in 2024 in the Boston venue
@@ -267,7 +269,7 @@ QUERY_GENERATION = """
         }}
     Dimension: {{'DealershipVenue', ['Boston', 'Cleveland', 'Pittsburgh'], 85}}
     Count: 3
-    Output: "Show me 3 dealership venues, including Boston, Cleveland, and Pittsburgh."
+    Output: "Show me 3 dealership venues."
 
     Example 2:
     User Query: How did the different vehicle categories perform in 2024?
@@ -292,7 +294,7 @@ QUERY_GENERATION = """
         "relevance": 92
     }}
     Count: 5
-    Output: "Show me 5 vehicle categories, including Compact SUVs, Mid-size Sedans, and Luxury Sedans."
+    Output: "Show me 5 vehicle categories."
 
     Use these examples to guide your query generation process.
 

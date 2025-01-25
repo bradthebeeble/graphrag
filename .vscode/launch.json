@@ -3,14 +3,14 @@
 	"version": "0.2.0",
 	"env": {
         "PATH": "/Users/asafatzmon/dev/graphrag/.venv/bin:${env:PATH}",
-        "PROJECT_ROOT": "../awel-dealership/"
+        "PROJECT_ROOT": "../awel-demo1/"
     },
 	"inputs": [
 		{
 			"id": "PROJECT_ROOT",
 			"type": "promptString",
 			"description": "Enter the path to the project root directory",
-			"default": "../awel-dealership/"
+			"default": "../awel-demo1/"
 		}
 	],
 	"configurations": [
@@ -54,8 +54,21 @@
 				"poe", "query",
 				"--root", "${input:PROJECT_ROOT}",
 				"--method", "global",
-				"--query", "Summarize the key points in this body of knowledge.",
-				"--response-type", "A single paragraph"
+				"--query", "Assuming the presentation of data over a 12 months time series; suggest a set of queries that would be fitting. Only include a query where there's clear data to support it. ",
+				"--response-type", "A list of queries in a json array format"
+			]
+		},
+		{
+			"name": "Query2",
+			"type": "debugpy",
+			"request": "launch",
+			"module": "poetry",
+			"args": [
+				"poe", "query",
+				"--root", "${input:PROJECT_ROOT}",
+				"--method", "local",
+				"--query", "Given the following query - present numerical data over 12 months time-series -  What are the monthly unit sales figures for the Compact SUV category, and how do they compare across different months? ",
+				"--response-type", "A table showing months as columns and the numberical data on the rows"
 			]
 		},
 		{
