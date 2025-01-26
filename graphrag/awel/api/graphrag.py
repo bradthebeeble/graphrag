@@ -25,8 +25,7 @@ def init():
         f"{PROJECT_ROOT}/output/create_final_community_reports.parquet"
     )
 
-init()
-
+# place everything below in an async function. AI!
 response, context = await api.global_search(
     config=graphrag_config,
     nodes=final_nodes,
