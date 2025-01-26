@@ -21,12 +21,8 @@ def call_model(state: MessagesState):
     # Pick up the last message in state["messages"]
     last_message = state["messages"][-1]
     
-    # Send it to async function perform_global_search
-    search_result = await perform_global_search(query=last_message.content)
-    
-    # Set its result in response
-    response = model.invoke(state["messages"])
-    response.append(search_result)
+    # Send it to async function perform_global_search. perform it as an asynchio call. AI!
+    response = await perform_global_search(query=last_message.content)
     
     return {"messages": response}
 
