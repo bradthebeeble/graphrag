@@ -16,13 +16,15 @@ model = ChatOpenAI(model=OPENAI_MODEL, api_key=SecretStr(OPENAI_KEY))
 
 
 # Define the function that calls the model
+import asyncio
+
 def call_model(state: MessagesState):
     global model
     # Pick up the last message in state["messages"]
     last_message = state["messages"][-1]
     
-    # Send it to async function perform_global_search. perform it as an asynchio call. AI!
-    response = await perform_global_search(query=last_message.content)
+    # Send it to async function perform_global_search. perform it as an asyncio call.
+    response = asyncio.run(perform_global_search(query=last_message.content))
     
     return {"messages": response}
 
