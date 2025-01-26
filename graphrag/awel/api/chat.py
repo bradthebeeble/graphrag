@@ -18,8 +18,16 @@ model = ChatOpenAI(model=OPENAI_MODEL, api_key=SecretStr(OPENAI_KEY))
 # Define the function that calls the model
 def call_model(state: MessagesState):
     global model
-    # pick up the last messages in state["messages"]. send it to async func perform_global_search, and set its result in response. AI!
+    # Pick up the last message in state["messages"]
+    last_message = state["messages"][-1]
+    
+    # Send it to async function perform_global_search
+    search_result = await perform_global_search(query=last_message.content)
+    
+    # Set its result in response
     response = model.invoke(state["messages"])
+    response.append(search_result)
+    
     return {"messages": response}
 
 
