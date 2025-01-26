@@ -25,15 +25,19 @@ def init():
         f"{PROJECT_ROOT}/output/create_final_community_reports.parquet"
     )
 
-# place everything below in an async function. AI!
-response, context = await api.global_search(
-    config=graphrag_config,
-    nodes=final_nodes,
-    entities=final_entities,
-    communities=final_communities,
-    community_reports=final_community_reports,
-    community_level=2,
-    dynamic_community_selection=False,
-    response_type="Multiple Paragraphs",
-    query="Who is Scrooge and what are his main relationships?",
+async def perform_global_search():
+    response, context = await api.global_search(
+        config=graphrag_config,
+        nodes=final_nodes,
+        entities=final_entities,
+        communities=final_communities,
+        community_reports=final_community_reports,
+        community_level=2,
+        dynamic_community_selection=False,
+        response_type="Multiple Paragraphs",
+        query="Who is Scrooge and what are his main relationships?",
+    )
+
+# Call the async function if needed
+# asyncio.run(perform_global_search())
 )
