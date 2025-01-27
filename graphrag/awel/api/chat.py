@@ -2,7 +2,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, END, MessagesState, StateGraph
-from langchain_core.messages import  HumanMessage, SystemMessage ,ToolMessage
+from langchain_core.messages import  HumanMessage, SystemMessage ,ToolMessage, AIMessage
 import json
 
 
@@ -46,7 +46,7 @@ def route_tools(
     return END
 
 def call_tools(state: MessagesState):
-    tools_by_name = {"MessagesState": perform_global_search, "perform_global_search": perform_global_search}
+    tools_by_name = {"perform_global_search": perform_global_search, "perform_local_search": perform_local_search}
     messages = state["messages"]
     last_message = messages[-1] 
     output_messages = []
@@ -89,6 +89,7 @@ workflow.add_node("call_tool_response", call_tool_response)
 workflow.add_edge(START, "call_model")
 workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_tool_response")
+workflow.add_edge("call_tool_response", END)
 
 
 # Add memory

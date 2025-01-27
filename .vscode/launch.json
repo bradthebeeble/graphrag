@@ -96,6 +96,17 @@
 				"--config",
 				"${input:PROJECT_ROOT}settings.yaml",
 			]
-		}
+		},
+		{                                                                                                                             
+                "name": "Python: FastAPI",                                                                                                
+                "type": "python",                                                                                                         
+                "request": "launch",                                                                                                      
+                "module": "uvicorn",                                                                                                      
+                "args": [                                                                                                                 
+                    "graphrag.awel.api.main:app",                                                                                         
+                    "--reload"                                                                                                            
+                ],                                                                                                                        
+                "jinja": true                                                                                                             
+            }  
 	]
 }
