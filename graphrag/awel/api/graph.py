@@ -15,7 +15,7 @@ from graphrag.config.resolve_path import resolve_paths
 
 PROJECT_ROOT = "../awel-demo1/"
 
-def get_model():
+def get_model_config():
     return config.llm.api_key, config.llm.model
 
 

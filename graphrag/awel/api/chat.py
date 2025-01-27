@@ -8,14 +8,17 @@ import json
 
 from pydantic import SecretStr
 
-from graphrag.awel.api.graph import init_graph, perform_global_search, perform_local_search
+from graphrag.awel.api.graph import get_model_config, init_graph, perform_global_search, perform_local_search
 
 SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation If it's a business querion, use tools."
 
-
+# Add memory
+memory = MemorySaver()
+init_graph()
+api_key,llm  = get_model_config()
 # Define a new graph
 workflow = StateGraph(state_schema=MessagesState)
-model = ChatOpenAI(model=OPENAI_MODEL, api_key=SecretStr(OPENAI_KEY))
+model = ChatOpenAI(model=llm, api_key=SecretStr(api_key))
 model_with_tools = model.bind_tools([perform_local_search, perform_global_search])
 
 
@@ -90,12 +93,10 @@ workflow.add_edge(START, "call_model")
 workflow.add_conditional_edges("call_model", route_tools)
 workflow.add_edge("call_tools", "call_tool_response")
 workflow.add_edge("call_tool_response", END)
-
-
-# Add memory
-memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
-init_graph()
+
+
+
 
 def process_query(thread_id: str, query: str):
     global model
