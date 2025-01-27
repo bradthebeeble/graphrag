@@ -43,8 +43,7 @@ def perform_global_search(query: Annotated[str,"the query to be sent to the RAG 
         This is a resource-intensive method, but often gives good responses for questions that require an understanding of the dataset as a whole
         (e.g. What are the most significant values of the herbs mentioned in this notebook?).
     """
-    # using asyncio make this funciton sync. AI!
-    response, context = await api.global_search(
+    response, context = asyncio.run(api.global_search(
         config=graphrag_config,
         nodes=final_nodes,
         entities=final_entities,
