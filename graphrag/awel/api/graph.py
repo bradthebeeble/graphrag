@@ -1,37 +1,38 @@
 from typing import Annotated
 import graphrag.api as api
+from graphrag.cli.query import _resolve_output_files
 from graphrag.config.create_graphrag_config import create_graphrag_config
 import yaml
 import pandas as pd
 from langchain_core.tools import tool
+import asyncio 
+from pathlib import Path
+
+from graphrag.config.load_config import load_config
+from graphrag.config.resolve_path import resolve_paths
 
 
 
 PROJECT_ROOT = "../awel-demo1/"
 
 def init_graph():
-    global graphrag_config, final_nodes, final_entities, final_communities, final_community_reports, final_text_units, final_relationship
-    settings = yaml.safe_load(open(f"{PROJECT_ROOT}/settings.yaml"))
-    graphrag_config = create_graphrag_config(
-        values=settings, root_dir=PROJECT_ROOT
-    )
+    global config, final_nodes, final_entities, final_communities, final_community_reports, final_text_units, final_relationships, final_covariates
+    
+    root_dir = Path(PROJECT_ROOT)
+    root = root_dir.resolve()
+    config_filepath = Path(f"{PROJECT_ROOT}/settings.yaml")
+    config = load_config(root, config_filepath)
+    resolve_paths(config)
 
     final_nodes = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_nodes.parquet")
-    final_entities = pd.read_parquet(
-        f"{PROJECT_ROOT}/output/create_final_entities.parquet"
-    )
-    final_communities = pd.read_parquet(
-        f"{PROJECT_ROOT}/output/create_final_communities.parquet"
-    )
-    final_community_reports = pd.read_parquet(
-        f"{PROJECT_ROOT}/output/create_final_community_reports.parquet"
-    )
-    final_text_units = pd.read_parquet(
-        f"{PROJECT_ROOT}/output/create_final_text_units.parquet"
-    )
-    final_relationship = pd.read_parquet(
-        f"{PROJECT_ROOT}/output/create_final_relationships.parquet"
-    )
+    final_communities = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_communities.parquet")
+    final_community_reports = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_community_reports.parquet")
+    final_text_units = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_text_units.parquet")
+    final_relationships = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_relationships.parquet")
+    final_entities = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_entities.parquet")
+    # check if f"{PROJECT_ROOT}/output/create_final_covariates.parquet exists, and if no, set final_covariates to None. AI!
+    final_covariates = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_covariates.parquet")
+
 
 @tool
 def perform_global_search(query: Annotated[str,"the query to be sent to the RAG tool"],
@@ -44,7 +45,7 @@ def perform_global_search(query: Annotated[str,"the query to be sent to the RAG 
         (e.g. What are the most significant values of the herbs mentioned in this notebook?).
     """
     response, context = asyncio.run(api.global_search(
-        config=graphrag_config,
+        config=config,
         nodes=final_nodes,
         entities=final_entities,
         communities=final_communities,
@@ -53,7 +54,7 @@ def perform_global_search(query: Annotated[str,"the query to be sent to the RAG 
         dynamic_community_selection=False,
         response_type=response_type,
         query=query,
-    )
+    ))
     return response
 
 @tool
@@ -66,17 +67,17 @@ def perform_local_search(query: Annotated[str,"the query to be sent to the RAG t
         This method is suitable for questions that require an understanding of specific entities mentioned in the documents
         (e.g. What are the healing properties of chamomile?).
     """
-    response, context = await api.local_search(
-        config=graphrag_config,
+    response, context = asyncio.run(api.local_search(
+        config=config,
         nodes=final_nodes,
         entities=final_entities,
         community_reports=final_community_reports,
         text_units=final_text_units,
-        relationships=final_relationship,
+        relationships=final_relationships,
         covariates=None,
         community_level=2,
         response_type=response_type,
         query=query,
-    )
+    ))
     return response
 
