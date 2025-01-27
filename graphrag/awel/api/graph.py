@@ -30,8 +30,11 @@ def init_graph():
     final_text_units = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_text_units.parquet")
     final_relationships = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_relationships.parquet")
     final_entities = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_entities.parquet")
-    # check if f"{PROJECT_ROOT}/output/create_final_covariates.parquet exists, and if no, set final_covariates to None. AI!
-    final_covariates = pd.read_parquet(f"{PROJECT_ROOT}/output/create_final_covariates.parquet")
+    covariates_path = f"{PROJECT_ROOT}/output/create_final_covariates.parquet"
+    if Path(covariates_path).exists():
+        final_covariates = pd.read_parquet(covariates_path)
+    else:
+        final_covariates = None
 
 
 @tool
