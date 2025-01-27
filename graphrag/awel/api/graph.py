@@ -15,6 +15,10 @@ from graphrag.config.resolve_path import resolve_paths
 
 PROJECT_ROOT = "../awel-demo1/"
 
+# return a tuple of config.llm.api_key and config.llm.model. AI!
+def get_model():
+
+
 def init_graph():
     global config, final_nodes, final_entities, final_communities, final_community_reports, final_text_units, final_relationships, final_covariates
     
