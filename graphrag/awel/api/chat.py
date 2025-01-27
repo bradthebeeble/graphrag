@@ -10,8 +10,6 @@ from pydantic import SecretStr
 
 from graphrag.awel.api.graph import init_graph, perform_global_search, perform_local_search
 
-OPENAI_KEY = "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"
-OPENAI_MODEL = "gpt-4o-mini"
 SYSTEM_PROMPT = "You are a helpful assistant. Answer the user's question in the context of the given conversation If it's a business querion, use tools."
 
 
@@ -76,7 +74,13 @@ def call_tools(state: MessagesState):
             
     return {"messages": output_messages}
 
-# define a function called call_tool_response that accepets state: MessagesState, should take the last message. Verifity its a ToolMessage. Append AIMessage with content = to lsat message. contnt. append. Return return {"messages": output_messages}. AI!
+def call_tool_response(state: MessagesState):
+    last_message = state["messages"][-1]
+    if not isinstance(last_message, ToolMessage):
+        raise ValueError("Last message is not a ToolMessage")
+    
+    output_messages = [AIMessage(content=last_message.content)]
+    return {"messages": output_messages}
 
 # Define the (single) node in the graph
 workflow.add_node("call_model", call_model)
