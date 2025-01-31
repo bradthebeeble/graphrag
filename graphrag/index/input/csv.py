@@ -69,8 +69,10 @@ async def load(
                     path,
                 )
             else:
-                data["text"] = data.apply(lambda x: x[csv_config.text_column], axis=1)
-                # concat data["attributes"] into data["text"] (if it exists). AI!
+                data["text"] = data.apply(
+                    lambda x: f"{x[csv_config.text_column]} {x['attributes']}" if 'attributes' in x else x[csv_config.text_column],
+                    axis=1
+                )
         if csv_config.title_column is not None and "title" not in data.columns:
             if csv_config.title_column not in data.columns:
                 log.warning(
