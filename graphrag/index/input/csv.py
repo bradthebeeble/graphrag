@@ -43,6 +43,7 @@ async def load(
             )
         if "id" not in data.columns:
             data["id"] = data.apply(lambda x: gen_sha512_hash(x, x.keys()), axis=1)
+        # add an if clause. It checks that there'd a csv_config which is list[str]. If so, it uses the list of string as indices into the Dataframe data, creating a string which is a strinfied dict of these names values; and add it as a new column to data DF, with the name: attributes. AI!
         if csv_config.source_column is not None and "source" not in data.columns:
             if csv_config.source_column not in data.columns:
                 log.warning(
@@ -128,7 +129,7 @@ async def load(
     for file, group in files:
         try:
             files_loaded.append(await load_file(file, group))
-        except Exception:  # noqa: BLE001 (catching Exception is fine here)
+        except Exception as e:  # noqa: BLE001 (catching Exception is fine here)
             log.warning("Warning! Error loading csv file %s. Skipping...", file)
 
     log.info("Found %d csv files, loading %d", len(files), len(files_loaded))
