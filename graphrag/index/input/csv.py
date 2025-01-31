@@ -43,7 +43,13 @@ async def load(
             )
         if "id" not in data.columns:
             data["id"] = data.apply(lambda x: gen_sha512_hash(x, x.keys()), axis=1)
-        # add an if clause. It checks that there'd a csv_config which is list[str]. If so, it uses the list of string as indices into the Dataframe data, creating a string which is a strinfied dict of these names values; and add it as a new column to data DF, with the name: attributes. AI!
+        
+        if isinstance(csv_config.attributes_columns, list):
+            data["attributes"] = data.apply(
+                lambda x: str({col: x[col] for col in csv_config.attributes_columns if col in x}),
+                axis=1
+            )
+
         if csv_config.source_column is not None and "source" not in data.columns:
             if csv_config.source_column not in data.columns:
                 log.warning(
