@@ -44,9 +44,9 @@ async def load(
         if "id" not in data.columns:
             data["id"] = data.apply(lambda x: gen_sha512_hash(x, x.keys()), axis=1)
         
-        if isinstance(csv_config.attributes_columns, list):
+        if csv_config.document_attribute_columns is not None:
             data["attributes"] = data.apply(
-                lambda x: str({col: x[col] for col in csv_config.attributes_columns if col in x}),
+                lambda x: str({col: x[col] for col in csv_config.document_attribute_columns if col in x}),
                 axis=1
             )
 
@@ -70,6 +70,7 @@ async def load(
                 )
             else:
                 data["text"] = data.apply(lambda x: x[csv_config.text_column], axis=1)
+                # concat data["attributes"] into data["text"] (if it exists). AI!
         if csv_config.title_column is not None and "title" not in data.columns:
             if csv_config.title_column not in data.columns:
                 log.warning(
