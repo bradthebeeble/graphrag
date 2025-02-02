@@ -19,7 +19,9 @@ api_key,llm  = get_model_config()
 # Define a new graph
 workflow = StateGraph(state_schema=MessagesState)
 model = ChatOpenAI(model=llm, api_key=SecretStr(api_key))
-model_with_tools = model.bind_tools([perform_local_search, perform_global_search])
+# model_with_tools = model.bind_tools([perform_local_search, perform_global_search])
+model_with_tools = model.bind_tools([perform_local_search])
+
 
 
 # Define the function that calls the model

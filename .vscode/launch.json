@@ -3,14 +3,14 @@
 	"version": "0.2.0",
 	"env": {
         "PATH": "/Users/asafatzmon/dev/graphrag/.venv/bin:${env:PATH}",
-        "PROJECT_ROOT": "../awel-demo1/"
+        "PROJECT_ROOT": "../oem-crm-data/"
     },
 	"inputs": [
 		{
 			"id": "PROJECT_ROOT",
 			"type": "promptString",
 			"description": "Enter the path to the project root directory",
-			"default": "../awel-demo1/"
+			"default": "../oem-crm-data/"
 		}
 	],
 	"configurations": [
@@ -31,7 +31,7 @@
 			"module": "poetry",
 			"args": [
 				"poe", "index",
-				"--root", "${input:PROJECT_ROOT}"
+				"--root", "${input:PROJECT_ROOT}",
 			],
 		},
 		{
@@ -54,8 +54,8 @@
 				"poe", "query",
 				"--root", "${input:PROJECT_ROOT}",
 				"--method", "global",
-				"--query", "Assuming the presentation of data over a 12 months time series; suggest a set of queries that would be fitting. Only include a query where there's clear data to support it. ",
-				"--response-type", "A list of queries in a json array format"
+				"--query", "Given my 2024 sales performance, and overall customet sentiment to high-end sedan, and taking into account market treands, what would be the top 5 recommendations for me to pursue strategy-wise. Include many numerical figures in your analysis. ",
+				"--response-type", "A nicely formatted MD document, full with numerical figures,  including the top 5 recommendations, supported with tabular data."
 			]
 		},
 		{

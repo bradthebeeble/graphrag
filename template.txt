@@ -1,0 +1,122 @@
+
+-Goal-
+Given a text document that is potentially relevant to this activity and a list of entity types, identify all entities of those types from the text and all relationships among the identified entities.
+
+-Steps-
+1. Identify all entities. For each identified entity, extract the following information:
+- entity_name: Name of the entity, capitalized
+- entity_type: One of the following types: [customer, meeting]
+- entity_description: Comprehensive description of the entity's attributes and activities
+Format each entity as ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
+
+2. From the entities identified in step 1, identify all pairs of (source_entity, target_entity) that are *clearly related* to each other.
+For each pair of related entities, extract the following information:
+- source_entity: name of the source entity, as identified in step 1
+- target_entity: name of the target entity, as identified in step 1
+- relationship_type: One of the following types: [held_with]
+- relationship_description: explanation as to why you think the source entity and the target entity are related to each other
+- relationship_strength: an integer score between 1 to 10, indicating strength of the relationship between the source entity and target entity
+Format each relationship as ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_type>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_strength>)
+
+3. Return output in The primary language of the provided text is "English." as a single list of all the entities and relationships identified in steps 1 and 2. Use **{record_delimiter}** as the list delimiter.
+
+4. If you have to translate into The primary language of the provided text is "English.", just translate the descriptions, nothing else!
+
+5. When finished, output {completion_delimiter}.
+
+-Examples-
+######################
+
+Example 1:
+
+entity_types: [customer, meeting]
+relationship_types: [held_with]
+text:
+Kia discussed their recent challenges with supply chain disruptions. We explored strategies to ensure smoother operations and mitigate future risks. {'Customer Name': 'Kia', 'Interaction Type': 'Social Media', 'Next Steps': 'Draft a comprehensive report on the discussed technologies and arrange a follow-up demo session.'}
+------------------------
+output:
+("entity"{tuple_delimiter}KIA{tuple_delimiter}customer{tuple_delimiter}Kia is a customer facing challenges with supply chain disruptions and is exploring strategies to improve operations.)
+{record_delimiter}
+("entity"{tuple_delimiter}FOLLOW-UP DEMO SESSION{tuple_delimiter}meeting{tuple_delimiter}A follow-up demo session is planned to discuss the technologies that can help Kia mitigate future risks.)
+{record_delimiter}
+("relationship"{tuple_delimiter}KIA{tuple_delimiter}FOLLOW-UP DEMO SESSION{tuple_delimiter}held_with{tuple_delimiter}Kia is scheduled to have a follow-up demo session to address their supply chain challenges and discuss potential solutions.{tuple_delimiter}8)
+{completion_delimiter}
+#############################
+
+
+Example 2:
+
+entity_types: [customer, meeting]
+relationship_types: [held_with]
+text:
+Kia inquired about cutting-edge software solutions that could streamline their internal workflows and decision-making processes. {'Customer Name': 'Kia', 'Interaction Type': 'In-Person Meeting', 'Next Steps': 'Draft a comprehensive report on the discussed technologies and arrange a follow-up demo session.'}
+------------------------
+output:
+("entity"{tuple_delimiter}KIA{tuple_delimiter}customer{tuple_delimiter}Kia is a customer interested in cutting-edge software solutions to improve internal workflows and decision-making processes.)
+{record_delimiter}
+("entity"{tuple_delimiter}IN-PERSON MEETING{tuple_delimiter}meeting{tuple_delimiter}An in-person meeting was held to discuss software solutions with Kia, focusing on streamlining workflows and decision-making.)
+{record_delimiter}
+("relationship"{tuple_delimiter}KIA{tuple_delimiter}IN-PERSON MEETING{tuple_delimiter}held_with{tuple_delimiter}Kia participated in an in-person meeting to explore software solutions for their internal processes{tuple_delimiter}8)
+{completion_delimiter}
+#############################
+
+
+Example 3:
+
+entity_types: [customer, meeting]
+relationship_types: [held_with]
+text:
+Exploration of market expansion opportunities was the highlight of the discussion with Nissan. They were keen on analyzing trends in emerging markets. {'Customer Name': 'Nissan', 'Interaction Type': 'In-Person Meeting', 'Next Steps': 'Deliver a detailed analysis of process improvements and outline a timeline for proposed changes.'}
+------------------------
+output:
+("entity"{tuple_delimiter}NISSAN{tuple_delimiter}customer{tuple_delimiter}Nissan is a customer interested in exploring market expansion opportunities and analyzing trends in emerging markets.)
+{record_delimiter}
+("entity"{tuple_delimiter}IN-PERSON MEETING{tuple_delimiter}meeting{tuple_delimiter}An in-person meeting was held to discuss market expansion opportunities and trends in emerging markets with Nissan.)
+{record_delimiter}
+("relationship"{tuple_delimiter}NISSAN{tuple_delimiter}IN-PERSON MEETING{tuple_delimiter}held_with{tuple_delimiter}The in-person meeting was conducted with Nissan to discuss market expansion opportunities.{tuple_delimiter}8)
+{completion_delimiter}
+#############################
+
+
+Example 4:
+
+entity_types: [customer, meeting]
+relationship_types: [held_with]
+text:
+Cost optimization and increasing production efficiency were central themes during the interaction with Chevrolet. {'Customer Name': 'Chevrolet', 'Interaction Type': 'In-Person Meeting', 'Next Steps': 'Create a roadmap for implementing advanced customer engagement platforms and follow up within two weeks.'}
+------------------------
+output:
+("entity"{tuple_delimiter}CHEVROLET{tuple_delimiter}customer{tuple_delimiter}Chevrolet is a customer involved in discussions about cost optimization and production efficiency during an in-person meeting.)
+{record_delimiter}
+("entity"{tuple_delimiter}IN-PERSON MEETING{tuple_delimiter}meeting{tuple_delimiter}An in-person meeting focused on cost optimization and increasing production efficiency with Chevrolet, discussing next steps for advanced customer engagement platforms.)
+{record_delimiter}
+("relationship"{tuple_delimiter}CHEVROLET{tuple_delimiter}IN-PERSON MEETING{tuple_delimiter}held_with{tuple_delimiter}The in-person meeting was held with Chevrolet to discuss key themes of cost optimization and production efficiency.{tuple_delimiter}8)
+{completion_delimiter}
+#############################
+
+
+Example 5:
+
+entity_types: [customer, meeting]
+relationship_types: [held_with]
+text:
+In this interaction, Kia focused on sustainability initiatives and ways to reduce their environmental footprint while maintaining performance. {'Customer Name': 'Kia', 'Interaction Type': 'Social Media', 'Next Steps': 'Prepare a presentation on emerging market trends and schedule a virtual meeting to discuss findings.'}
+------------------------
+output:
+("entity"{tuple_delimiter}KIA{tuple_delimiter}customer{tuple_delimiter}Kia is an automotive manufacturer focusing on sustainability initiatives and reducing their environmental footprint while maintaining performance.)
+{record_delimiter}
+("entity"{tuple_delimiter}VIRTUAL MEETING{tuple_delimiter}meeting{tuple_delimiter}A virtual meeting is scheduled to discuss findings related to emerging market trends and sustainability initiatives.)
+{record_delimiter}
+("relationship"{tuple_delimiter}KIA{tuple_delimiter}VIRTUAL MEETING{tuple_delimiter}held_with{tuple_delimiter}Kia will participate in a virtual meeting to discuss the presentation on emerging market trends and sustainability initiatives.{tuple_delimiter}8)
+{completion_delimiter}
+#############################
+
+
+
+-Real Data-
+######################
+entity_types: [customer, meeting]
+relationship_types: [held_with]
+text: {input_text}
+######################
+output:

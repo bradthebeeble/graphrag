@@ -98,6 +98,10 @@ class PipelineCSVInputConfig(PipelineInputConfig[Literal[InputFileType.csv]]):
     )
     """The column to use as the title of the document."""
 
+    document_attribute_columns: list[str] = Field(
+        description="The columns to use as attributes of the document.", default=[]
+    )
+
 
 class PipelineTextInputConfig(PipelineInputConfig[Literal[InputFileType.text]]):
     """Represent the configuration for a text input."""

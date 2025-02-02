@@ -13,7 +13,7 @@ from graphrag.config.resolve_path import resolve_paths
 
 
 
-PROJECT_ROOT = "../awel-demo1/"
+PROJECT_ROOT = "../oem-crm-data/"
 
 def get_model_config():
     return config.llm.api_key, config.llm.model
@@ -43,7 +43,7 @@ def init_graph():
 
 @tool
 def perform_global_search(query: Annotated[str,"the query to be sent to the RAG tool"],
-                                response_type:Annotated[str,"a free text description of the expected response from the LLM. Defaults to 'A Single Paragraphs. No more than 50 words.'"]
+                                response_type:Annotated[str,"a free text description of the expected response from the LLM. '"]
                                 ):
     """
         Global search method generates answers by searching over all AI-generated community reports in a map-reduce fashion.

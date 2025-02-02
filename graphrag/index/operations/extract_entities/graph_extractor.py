@@ -159,16 +159,16 @@ class GraphExtractor:
     async def _process_document(
         self, text: str, prompt_variables: dict[str, str]
     ) -> str:
-        new_prompt = self._extraction_prompt.format(**{
-                **prompt_variables,
-                self._input_text_key: text,
-            }),
-        response = await self._llm(
-            self._extraction_prompt.format(**{
-                **prompt_variables,
-                self._input_text_key: text,
-            }),
-        )
+        # new_prompt = self._extraction_prompt.format(**{
+        #         **prompt_variables,
+        #         self._input_text_key: text,
+        #     }),
+        formatted_prompt = self._extraction_prompt.format(**{
+            **prompt_variables,
+            self._input_text_key: text,
+        })
+        response = await self._llm(formatted_prompt)
+        # response = await self._llm(self._extraction_prompt)
         results = response.output.content or ""
 
         # Repeat to ensure we maximize entity count

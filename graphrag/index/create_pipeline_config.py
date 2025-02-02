@@ -329,6 +329,7 @@ def _get_pipeline_input_config(
                 timestamp_format=settings.input.timestamp_format,
                 text_column=settings.input.text_column,
                 title_column=settings.input.title_column,
+                document_attribute_columns=settings.input.document_attribute_columns,
                 type=settings.input.type,
                 connection_string=settings.input.connection_string,
                 storage_account_blob_url=settings.input.storage_account_blob_url,

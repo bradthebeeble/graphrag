@@ -69,6 +69,7 @@ async def load(
                     path,
                 )
             else:
+                data["text"] = data.apply(lambda x: x[csv_config.text_column], axis=1)
                 data["text"] = data.apply(
                     lambda x: f"{x[csv_config.text_column]} {x['attributes']}" if 'attributes' in x else x[csv_config.text_column],
                     axis=1
